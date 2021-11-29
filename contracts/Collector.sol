@@ -21,7 +21,7 @@ contract Collector is Ownable {
 
     IFactory public immutable factory;
     address private immutable PToken;
-    address private immutable weth;
+    address private immutable wada;
 
     mapping(address => address) internal _bridges;
 
@@ -38,24 +38,24 @@ contract Collector is Ownable {
     constructor(
         address _factory,
         address _PToken,
-        address _weth
+        address _wada
     ) public {
         factory = IFactory(_factory);
         PToken = _PToken;
-        weth = _weth;
+        wada = _wada;
     }
 
     function bridgeFor(address token) public view returns (address bridge) {
         bridge = _bridges[token];
         if (bridge == address(0)) {
-            bridge = weth;
+            bridge = wada;
         }
     }
 
     function setBridge(address token, address bridge) external onlyOwner {
         // Checks
         require(
-            token != PToken && token != weth && token != bridge,
+            token != PToken && token != wada && token != bridge,
             "Collector: Invalid bridge"
         );
 
@@ -120,8 +120,8 @@ contract Collector is Ownable {
             if (token0 == PToken) {
                 IERC20Burnable(PToken).burn(amount);
                 PTokenOut = amount;
-            } else if (token0 == weth) {
-                PTokenOut = _toPToken(weth, amount);
+            } else if (token0 == wada) {
+                PTokenOut = _toPToken(wada, amount);
             } else {
                 address bridge = bridgeFor(token0);
                 amount = _swap(token0, bridge, amount, address(this));
@@ -133,17 +133,17 @@ contract Collector is Ownable {
         } else if (token1 == PToken) {
             IERC20Burnable(PToken).burn(amount1);
             PTokenOut = _toPToken(token0, amount0).add(amount1);
-        } else if (token0 == weth) {
+        } else if (token0 == wada) {
             // eg. ETH - USDC
             PTokenOut = _toPToken(
-                weth,
-                _swap(token1, weth, amount1, address(this)).add(amount0)
+                wada,
+                _swap(token1, wada, amount1, address(this)).add(amount0)
             );
-        } else if (token1 == weth) {
+        } else if (token1 == wada) {
             // eg. USDT - ETH
             PTokenOut = _toPToken(
-                weth,
-                _swap(token0, weth, amount0, address(this)).add(amount1)
+                wada,
+                _swap(token0, wada, amount0, address(this)).add(amount1)
             );
         } else {
             // eg. MIC - USDT

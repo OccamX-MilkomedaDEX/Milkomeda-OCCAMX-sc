@@ -1,7 +1,7 @@
 pragma solidity ^0.6.0;
 
 import './interfaces/IFactory.sol';
-import '@uniswap/lib/contracts/libraries/TransferHelper.sol';
+import './libraries/TransferHelper.sol';
 
 import './libraries/Library.sol';
 import './interfaces/IRouter01.sol';
@@ -23,7 +23,7 @@ contract Router01 is IRouter01 {
     }
 
     receive() external payable {
-        assert(msg.sender == WADA); // only accept ETH via fallback from the WADA contract
+        assert(msg.sender == WADA); // only accept ADA via fallback from the WADA contract
     }
 
     // **** ADD LIQUIDITY ****
@@ -71,28 +71,28 @@ contract Router01 is IRouter01 {
         TransferHelper.safeTransferFrom(tokenB, msg.sender, pair, amountB);
         liquidity = IPair(pair).mint(to);
     }
-    function addLiquidityETH(
+    function addLiquidityADA(
         address token,
         uint amountTokenDesired,
         uint amountTokenMin,
-        uint amountETHMin,
+        uint amountADAMin,
         address to,
         uint deadline
-    ) external override payable ensure(deadline) returns (uint amountToken, uint amountETH, uint liquidity) {
-        (amountToken, amountETH) = _addLiquidity(
+    ) external override payable ensure(deadline) returns (uint amountToken, uint amountADA, uint liquidity) {
+        (amountToken, amountADA) = _addLiquidity(
             token,
             WADA,
             amountTokenDesired,
             msg.value,
             amountTokenMin,
-            amountETHMin
+            amountADAMin
         );
         address pair = Library.pairFor(factory, token, WADA);
         TransferHelper.safeTransferFrom(token, msg.sender, pair, amountToken);
-        IWADA(WADA).deposit{value: amountETH}();
-        assert(IWADA(WADA).transfer(pair, amountETH));
+        IWADA(WADA).deposit{value: amountADA}();
+        assert(IWADA(WADA).transfer(pair, amountADA));
         liquidity = IPair(pair).mint(to);
-        if (msg.value > amountETH) TransferHelper.safeTransferETH(msg.sender, msg.value - amountETH); // refund dust eth, if any
+        if (msg.value > amountADA) TransferHelper.safeTransferADA(msg.sender, msg.value - amountADA); // refund dust ADA, if any
     }
 
     // **** REMOVE LIQUIDITY ****
@@ -113,26 +113,26 @@ contract Router01 is IRouter01 {
         require(amountA >= amountAMin, 'DEXRouter: INSUFFICIENT_A_AMOUNT');
         require(amountB >= amountBMin, 'DEXRouter: INSUFFICIENT_B_AMOUNT');
     }
-    function removeLiquidityETH(
+    function removeLiquidityADA(
         address token,
         uint liquidity,
         uint amountTokenMin,
-        uint amountETHMin,
+        uint amountADAMin,
         address to,
         uint deadline
-    ) public override ensure(deadline) returns (uint amountToken, uint amountETH) {
-        (amountToken, amountETH) = removeLiquidity(
+    ) public override ensure(deadline) returns (uint amountToken, uint amountADA) {
+        (amountToken, amountADA) = removeLiquidity(
             token,
             WADA,
             liquidity,
             amountTokenMin,
-            amountETHMin,
+            amountADAMin,
             address(this),
             deadline
         );
         TransferHelper.safeTransfer(token, to, amountToken);
-        IWADA(WADA).withdraw(amountETH);
-        TransferHelper.safeTransferETH(to, amountETH);
+        IWADA(WADA).withdraw(amountADA);
+        TransferHelper.safeTransferADA(to, amountADA);
     }
     function removeLiquidityWithPermit(
         address tokenA,
@@ -149,19 +149,19 @@ contract Router01 is IRouter01 {
         IPair(pair).permit(msg.sender, address(this), value, deadline, v, r, s);
         (amountA, amountB) = removeLiquidity(tokenA, tokenB, liquidity, amountAMin, amountBMin, to, deadline);
     }
-    function removeLiquidityETHWithPermit(
+    function removeLiquidityADAWithPermit(
         address token,
         uint liquidity,
         uint amountTokenMin,
-        uint amountETHMin,
+        uint amountADAMin,
         address to,
         uint deadline,
         bool approveMax, uint8 v, bytes32 r, bytes32 s
-    ) external override returns (uint amountToken, uint amountETH) {
+    ) external override returns (uint amountToken, uint amountADA) {
         address pair = Library.pairFor(factory, token, WADA);
         uint value = approveMax ? uint(-1) : liquidity;
         IPair(pair).permit(msg.sender, address(this), value, deadline, v, r, s);
-        (amountToken, amountETH) = removeLiquidityETH(token, liquidity, amountTokenMin, amountETHMin, to, deadline);
+        (amountToken, amountADA) = removeLiquidityADA(token, liquidity, amountTokenMin, amountADAMin, to, deadline);
     }
 
     // **** SWAP ****
@@ -200,7 +200,7 @@ contract Router01 is IRouter01 {
         TransferHelper.safeTransferFrom(path[0], msg.sender, Library.pairFor(factory, path[0], path[1]), amounts[0]);
         _swap(amounts, path, to);
     }
-    function swapExactETHForTokens(uint amountOutMin, address[] calldata path, address to, uint deadline)
+    function swapExactADAForTokens(uint amountOutMin, address[] calldata path, address to, uint deadline)
         external
         override
         payable
@@ -214,7 +214,7 @@ contract Router01 is IRouter01 {
         assert(IWADA(WADA).transfer(Library.pairFor(factory, path[0], path[1]), amounts[0]));
         _swap(amounts, path, to);
     }
-    function swapTokensForExactETH(uint amountOut, uint amountInMax, address[] calldata path, address to, uint deadline)
+    function swapTokensForExactADA(uint amountOut, uint amountInMax, address[] calldata path, address to, uint deadline)
         external
         override
         ensure(deadline)
@@ -226,9 +226,9 @@ contract Router01 is IRouter01 {
         TransferHelper.safeTransferFrom(path[0], msg.sender, Library.pairFor(factory, path[0], path[1]), amounts[0]);
         _swap(amounts, path, address(this));
         IWADA(WADA).withdraw(amounts[amounts.length - 1]);
-        TransferHelper.safeTransferETH(to, amounts[amounts.length - 1]);
+        TransferHelper.safeTransferADA(to, amounts[amounts.length - 1]);
     }
-    function swapExactTokensForETH(uint amountIn, uint amountOutMin, address[] calldata path, address to, uint deadline)
+    function swapExactTokensForADA(uint amountIn, uint amountOutMin, address[] calldata path, address to, uint deadline)
         external
         override
         ensure(deadline)
@@ -240,9 +240,9 @@ contract Router01 is IRouter01 {
         TransferHelper.safeTransferFrom(path[0], msg.sender, Library.pairFor(factory, path[0], path[1]), amounts[0]);
         _swap(amounts, path, address(this));
         IWADA(WADA).withdraw(amounts[amounts.length - 1]);
-        TransferHelper.safeTransferETH(to, amounts[amounts.length - 1]);
+        TransferHelper.safeTransferADA(to, amounts[amounts.length - 1]);
     }
-    function swapETHForExactTokens(uint amountOut, address[] calldata path, address to, uint deadline)
+    function swapADAForExactTokens(uint amountOut, address[] calldata path, address to, uint deadline)
         external
         override
         payable
@@ -255,7 +255,7 @@ contract Router01 is IRouter01 {
         IWADA(WADA).deposit{value: amounts[0]}();
         assert(IWADA(WADA).transfer(Library.pairFor(factory, path[0], path[1]), amounts[0]));
         _swap(amounts, path, to);
-        if (msg.value > amounts[0]) TransferHelper.safeTransferETH(msg.sender, msg.value - amounts[0]); // refund dust eth, if any
+        if (msg.value > amounts[0]) TransferHelper.safeTransferADA(msg.sender, msg.value - amounts[0]); // refund dust ADA, if any
     }
 
     function quote(uint amountA, uint reserveA, uint reserveB) public pure override returns (uint amountB) {

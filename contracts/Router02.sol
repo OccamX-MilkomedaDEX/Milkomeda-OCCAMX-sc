@@ -1,7 +1,7 @@
 pragma solidity ^0.6.0;
 
 import './interfaces/IFactory.sol';
-import '@uniswap/lib/contracts/libraries/TransferHelper.sol';
+import './libraries/TransferHelper.sol';
 
 import './interfaces/IRouter02.sol';
 import './libraries/Library.sol';

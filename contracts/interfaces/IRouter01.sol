@@ -21,7 +21,7 @@ interface IRouter01 {
         uint amountADAMin,
         address to,
         uint deadline
-    ) external payable returns (uint amountToken, uint amountADA uint liquidity);
+    ) external payable returns (uint amountToken, uint amountADA, uint liquidity);
     function removeLiquidity(
         address tokenA,
         address tokenB,
@@ -79,7 +79,7 @@ interface IRouter01 {
     function swapTokensForExactADA(uint amountOut, uint amountInMax, address[] calldata path, address to, uint deadline)
         external
         returns (uint[] memory amounts);
-    function swapExactTokensForADAuint amountIn, uint amountOutMin, address[] calldata path, address to, uint deadline)
+    function swapExactTokensForADA (uint amountIn, uint amountOutMin, address[] calldata path, address to, uint deadline)
         external
         returns (uint[] memory amounts);
     function swapADAForExactTokens(uint amountOut, address[] calldata path, address to, uint deadline)

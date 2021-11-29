@@ -2,7 +2,7 @@
 // Copyright (C) 2015, 2016, 2017 Dapphub
 pragma solidity ^0.6.0;
 
-import "./interfaces/IADA10.sol";
+import "./interfaces/IWADA10.sol";
 import "./interfaces/IERC3156FlashBorrower.sol";
 
 interface ITransferReceiver {

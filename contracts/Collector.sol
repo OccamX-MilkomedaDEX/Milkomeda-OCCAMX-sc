@@ -20,8 +20,8 @@ contract Collector is Ownable {
 
 
     IFactory public immutable factory;
-    address private immutable PToken;
-    address private immutable wada;
+    address public immutable PToken;
+    address public immutable wada;
 
     mapping(address => address) internal _bridges;
 

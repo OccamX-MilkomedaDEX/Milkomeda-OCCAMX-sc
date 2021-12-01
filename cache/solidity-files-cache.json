@@ -2,8 +2,8 @@
   "_format": "hh-sol-cache-2",
   "files": {
     "/Users/anhdungle/Bitcoin.com/Milkomeda-OCCAMX-sc/contracts/Collector.sol": {
-      "lastModificationDate": 1638196444930,
-      "contentHash": "40d5ec76bd52f21aa45301fab8fb38d8",
+      "lastModificationDate": 1638251004869,
+      "contentHash": "b05598c21326f7ecf943639c69bb20f0",
       "sourceName": "contracts/Collector.sol",
       "solcConfig": {
         "version": "0.6.12",
@@ -304,8 +304,8 @@
       ]
     },
     "/Users/anhdungle/Bitcoin.com/Milkomeda-OCCAMX-sc/contracts/libraries/Library.sol": {
-      "lastModificationDate": 1637909132850,
-      "contentHash": "57c1a387ee196b18364d957d97f42ac2",
+      "lastModificationDate": 1638221054440,
+      "contentHash": "72f9e33882333f5666effda9ca639bbd",
       "sourceName": "contracts/libraries/Library.sol",
       "solcConfig": {
         "version": "0.6.12",
@@ -1440,6 +1440,43 @@
       ],
       "artifacts": [
         "IERC20"
+      ]
+    },
+    "/Users/anhdungle/Bitcoin.com/Milkomeda-OCCAMX-sc/contracts/CalHash.sol": {
+      "lastModificationDate": 1638220960671,
+      "contentHash": "ae8fafd4e619d18a6c6e2a0e0b04c4cb",
+      "sourceName": "contracts/CalHash.sol",
+      "solcConfig": {
+        "version": "0.6.12",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "./Pair.sol"
+      ],
+      "versionPragmas": [
+        "^0.6.0"
+      ],
+      "artifacts": [
+        "CalHash"
       ]
     }
   }

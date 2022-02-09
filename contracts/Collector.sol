@@ -22,6 +22,7 @@ contract Collector is Ownable {
     IFactory public immutable factory;
     address public immutable PToken;
     address public immutable wada;
+    address public stakingContract;
 
     mapping(address => address) internal _bridges;
 
@@ -62,6 +63,10 @@ contract Collector is Ownable {
         // Effects
         _bridges[token] = bridge;
         emit LogBridgeSet(token, bridge);
+    }
+
+    function setStakingContract(address _stakingContract) external onlyOwner {
+        stakingContract = _stakingContract;
     }
 
     modifier onlyEOA() {

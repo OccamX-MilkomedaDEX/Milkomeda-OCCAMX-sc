@@ -3,8 +3,8 @@ const {utils} = require("ethers");
 
 async function main() {
 
-    let tokenName = "Test2";
-    let ticker = "TEST2";
+    let tokenName = "CardWallet";
+    let ticker = "CW";
     let supply = utils.parseEther("100000000");
     /* let supply = utils.parseUnits("100000000", "gwei"); */
 
@@ -25,6 +25,7 @@ async function main() {
     const TokenInstance = await TokenFactory.deploy(supply, holder, tokenName, ticker);
 
     console.log("Token address:", TokenInstance.address);
+    console.log("Token decimals:", await TokenInstance.decimals());
     
     /* await sleep(120);
     await hre.run("verify:verify", {

@@ -9,14 +9,6 @@ async function main() {
 
     const [deployer] = await hre.ethers.getSigners();
 
-    let factoryAddress, collectorAddress, zeroAddress;
-
-    if (hre.network.name == "milkomedaTestnet") {
-        factoryAddress = "0x428779a1A596c9cFdB68f5DaEf78b14901B95566";
-        collectorAddress = "0xEBe25C7BFd25e32e4c4a1B4046B52CF7DF5008E7";
-        zeroAddress = "0x0000000000000000000000000000000000000000";
-    } 
-
     console.log(
     "Deploying contracts with the account:",
     deployer.address
@@ -24,13 +16,14 @@ async function main() {
     
     console.log("Account balance:", (await deployer.getBalance()).toString());
 
-    const DEXFactoryFactory = await ethers.getContractFactory("Factory");
-    const DEXFactoryInstance = await DEXFactoryFactory.attach(factoryAddress);
+    const TokenFactory = await ethers.getContractFactory("ERC20Permit");
+    const Token1Instance = await TokenFactory.attach("0x4AD6B6B9a9C817C544D398d297dffbC77d64683B");
+    const Token2Instance = await TokenFactory.attach("0xB5a2fDA777EAeED6A665742aCAefD7417140618e");
+    const Token3Instance = await TokenFactory.attach("0xd8717258bC00Ba82041394981B0290D7281122de");
 
-    await DEXFactoryInstance.connect(deployer).setFeeTo(zeroAddress);
-    await sleep(20);
-
-    console.log(`fee to address is ${await DEXFactoryInstance.feeTo()}`);
+    console.log(`Token 1 balance ${await Token1Instance.balanceOf(deployer.address)}`);
+    console.log(`Token 2 balance ${await Token2Instance.balanceOf(deployer.address)}`);
+    console.log(`Token 3 balance ${await Token3Instance.balanceOf(deployer.address)}`);
     
     /* await sleep(150);
     await hre.run("verify:verify", {

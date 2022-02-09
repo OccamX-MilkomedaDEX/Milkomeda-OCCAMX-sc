@@ -7,8 +7,8 @@ async function main() {
     let factoryAddress, WADAAddress;
 
     if (hre.network.name == "milkomedaTestnet") {
-        factoryAddress = "0x8265B1f98c86130cc2436247bf5152A0Eb03E970";
-        WADAAddress = "0x34CB666e61c379ECD20690ea7A3Fe4E271668ef0";
+        factoryAddress = "0x428779a1A596c9cFdB68f5DaEf78b14901B95566";
+        WADAAddress = "0x01BbBB9C97FC43e3393E860fc8BbeaD47B6960dB";
     } 
 
 

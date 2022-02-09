@@ -78,6 +78,7 @@ contract Collector is Ownable {
 
     modifier onlyWhenUnlocked() {
         require(locked == false, "Collector: liquidity is locked");
+        _;
     }
 
     function setLock(bool _locked) external onlyOwner {

@@ -1,6 +1,6 @@
 const hre = require("hardhat");
 const {utils} = require("ethers");
-
+const {sleep} = require("./helpers");
 
 async function main() {
 
@@ -13,7 +13,7 @@ async function main() {
 
     if (hre.network.name == "milkomedaTestnet") {
         factoryAddress = "0x428779a1A596c9cFdB68f5DaEf78b14901B95566";
-        collectorAddress = "0xEBe25C7BFd25e32e4c4a1B4046B52CF7DF5008E7";
+        collectorAddress = "0xa1350b1F57475D2a9D597cA6C489e7824EBeC516";
         zeroAddress = "0x0000000000000000000000000000000000000000";
     } 
 
@@ -27,7 +27,7 @@ async function main() {
     const DEXFactoryFactory = await ethers.getContractFactory("Factory");
     const DEXFactoryInstance = await DEXFactoryFactory.attach(factoryAddress);
 
-    await DEXFactoryInstance.connect(deployer).setFeeTo(zeroAddress);
+    await DEXFactoryInstance.connect(deployer).setFeeTo(collectorAddress);
     await sleep(20);
 
     console.log(`fee to address is ${await DEXFactoryInstance.feeTo()}`);

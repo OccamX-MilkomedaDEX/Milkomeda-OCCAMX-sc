@@ -8,7 +8,6 @@ import "./libraries/SafeERC20.sol";
 
 import "./interfaces/IERC20Permit.sol";
 import "./interfaces/IERC20.sol";
-import "./interfaces/IERC20Burnable.sol";
 import "./interfaces/IPair.sol";
 import "./interfaces/IFactory.sol";
 
@@ -133,7 +132,7 @@ contract Collector is Ownable {
         if (token0 == token1) {
             uint256 amount = amount0.add(amount1);
             if (token0 == PToken) {
-                IERC20Burnable(PToken).burn(amount);
+                IERC20(PToken).safeTransfer(stakingContract, amount);
                 PTokenOut = amount;
             } else if (token0 == wada) {
                 PTokenOut = _toPToken(wada, amount);
@@ -143,10 +142,10 @@ contract Collector is Ownable {
                 PTokenOut = _convertStep(bridge, bridge, amount, 0);
             }
         } else if (token0 == PToken) {
-            IERC20Burnable(PToken).burn(amount0);
+            IERC20(PToken).safeTransfer(stakingContract, amount0);
             PTokenOut = _toPToken(token1, amount1).add(amount0);
         } else if (token1 == PToken) {
-            IERC20Burnable(PToken).burn(amount1);
+            IERC20(PToken).safeTransfer(stakingContract, amount1);
             PTokenOut = _toPToken(token0, amount0).add(amount1);
         } else if (token0 == wada) {
             // eg. ETH - USDC
@@ -234,6 +233,5 @@ contract Collector is Ownable {
     {
         // X1 - X5: OK
         amountOut = _swap(token, PToken, amountIn, address(this));
-        IERC20Burnable(PToken).burn(amountOut);
     }
 }

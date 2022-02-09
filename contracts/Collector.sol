@@ -23,6 +23,7 @@ contract Collector is Ownable {
     address public immutable PToken;
     address public immutable wada;
     address public stakingContract;
+    bool public locked; //lock liquidity inside the collector until the staking contract is deployed
 
     mapping(address => address) internal _bridges;
 
@@ -44,6 +45,7 @@ contract Collector is Ownable {
         factory = IFactory(_factory);
         PToken = _PToken;
         wada = _wada;
+        locked = true;
     }
 
     function bridgeFor(address token) public view returns (address bridge) {
@@ -75,14 +77,22 @@ contract Collector is Ownable {
         _;
     }
 
-    function convert(address token0, address token1) external onlyEOA() {
+    modifier onlyWhenUnlocked() {
+        require(locked == false, "Collector: liquidity is locked");
+    }
+
+    function setLock(bool _locked) external onlyOwner {
+        locked = _locked;
+    }
+
+    function convert(address token0, address token1) external onlyEOA() onlyWhenUnlocked() {
         _convert(token0, token1);
     }
 
     function convertMultiple(
         address[] calldata token0,
         address[] calldata token1
-    ) external onlyEOA() {
+    ) external onlyEOA() onlyWhenUnlocked() {
         // TODO: This can be optimized a fair bit, but this is safer and simpler for now
         uint256 len = token0.length;
         for (uint256 i = 0; i < len; i++) {

@@ -70,6 +70,10 @@ contract Collector is Ownable {
         stakingContract = _stakingContract;
     }
 
+    function setPToken(address _PToken) external onlyOwner {
+        PToken = _PToken;
+    }
+
     modifier onlyEOA() {
         // Try to make flash-loan exploit harder to do by only allowing externally owned addresses.
         require(msg.sender == tx.origin, "Collector: must use EOA");

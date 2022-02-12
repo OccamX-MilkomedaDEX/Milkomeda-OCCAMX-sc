@@ -19,7 +19,7 @@ contract Collector is Ownable {
 
 
     IFactory public immutable factory;
-    address public immutable PToken;
+    address public PToken;
     address public immutable wada;
     address public stakingContract;
     bool public locked; //lock liquidity inside the collector until the staking contract is deployed

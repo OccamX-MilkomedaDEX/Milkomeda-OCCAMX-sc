@@ -33,6 +33,10 @@ module.exports = {
         url: process.env.MilkomedaTestnetAPI,
         accounts: [ process.env.MilkomedaTestnetDeployerPrivateKey ],
         },
+    milkomedaMainnet: {
+    url: process.env.MilkomedaTestnetAPI,
+    accounts: [ process.env.MilkomedaMainnetDeployerPrivateKey ],
+        },
     mainnet: {
         url: process.env.MainnetAlchemyAPI,
         accounts: [ process.env.RazerPersonalPrivateKey ],

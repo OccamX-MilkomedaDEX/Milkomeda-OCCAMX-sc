@@ -3,8 +3,8 @@ const {utils} = require("ethers");
 
 async function main() {
 
-    let tokenName = "CardWallet";
-    let ticker = "CW";
+    let tokenName = "Test2";
+    let ticker = "Test2";
     let supply = utils.parseEther("100000000");
     /* let supply = utils.parseUnits("100000000", "gwei"); */
 

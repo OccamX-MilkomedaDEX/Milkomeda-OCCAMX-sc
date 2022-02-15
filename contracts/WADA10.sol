@@ -3,7 +3,6 @@
 pragma solidity ^0.6.0;
 
 import "./interfaces/IWADA10.sol";
-import "./interfaces/IERC3156FlashBorrower.sol";
 
 interface ITransferReceiver {
     function onTokenTransfer(address, uint, bytes calldata) external returns (bool);
@@ -19,7 +18,6 @@ contract WADA10 is IWADA10 {
     string public override constant symbol = "WADA10";
     uint8  public override constant decimals = 18;
 
-    bytes32 public immutable CALLBACK_SUCCESS = keccak256("ERC3156FlashBorrower.onFlashLoan");
     bytes32 public immutable PERMIT_TYPEHASH = keccak256("Permit(address owner,address spender,uint256 value,uint256 nonce,uint256 deadline)");
     uint256 public immutable deploymentChainId;
     bytes32 private immutable _DOMAIN_SEPARATOR;
@@ -33,9 +31,6 @@ contract WADA10 is IWADA10 {
 
     /// @dev Records number of WADA10 token that account (second) will be allowed to spend on behalf of another account (first) through {transferFrom}.
     mapping (address => mapping (address => uint256)) public override allowance;
-
-    /// @dev Current amount of flash-minted WADA10 token.
-    uint256 public override flashMinted;
     
     constructor() public {
         uint256 chainId;
@@ -66,7 +61,7 @@ contract WADA10 is IWADA10 {
     
     /// @dev Returns the total supply of WADA10 token as the ADA held in this contract.
     function totalSupply() external view override returns (uint256) {
-        return address(this).balance + flashMinted;
+        return address(this).balance;
     }
 
     /// @dev Fallback, `msg.value` of ADA sent to this contract grants caller account a matching increase in WADA10 token balance.
@@ -103,62 +98,6 @@ contract WADA10 is IWADA10 {
         emit Transfer(address(0), to, msg.value);
 
         return ITransferReceiver(to).onTokenTransfer(msg.sender, msg.value, data);
-    }
-
-    /// @dev Return the amount of WADA10 token that can be flash-lent.
-    function maxFlashLoan(address token) external view override returns (uint256) {
-        return token == address(this) ? type(uint112).max - flashMinted : 0; // Can't underflow
-    }
-
-    /// @dev Return the fee (zero) for flash lending an amount of WADA10 token.
-    function flashFee(address token, uint256) external view override returns (uint256) {
-        require(token == address(this), "WADA: flash mint only WADA10");
-        return 0;
-    }
-
-    /// @dev Flash lends `value` WADA10 token to the receiver address.
-    /// By the end of the transaction, `value` WADA10 token will be burned from the receiver.
-    /// The flash-minted WADA10 token is not backed by real ADA, but can be withdrawn as such up to the ADA balance of this contract.
-    /// Arbitrary data can be passed as a bytes calldata parameter.
-    /// Emits {Approval} event to reflect reduced allowance `value` for this contract to spend from receiver account (`receiver`),
-    /// unless allowance is set to `type(uint256).max`
-    /// Emits two {Transfer} events for minting and burning of the flash-minted amount.
-    /// Returns boolean value indicating whether operation succeeded.
-    /// Requirements:
-    ///   - `value` must be less or equal to type(uint112).max.
-    ///   - The total of all flash loans in a tx must be less or equal to type(uint112).max.
-    function flashLoan(IERC3156FlashBorrower receiver, address token, uint256 value, bytes calldata data) external override returns (bool) {
-        require(token == address(this), "WADA: flash mint only WADA10");
-        require(value <= type(uint112).max, "WADA: individual loan limit exceeded");
-        flashMinted = flashMinted + value;
-        require(flashMinted <= type(uint112).max, "WADA: total loan limit exceeded");
-        
-        // _mintTo(address(receiver), value);
-        balanceOf[address(receiver)] += value;
-        emit Transfer(address(0), address(receiver), value);
-
-        require(
-            receiver.onFlashLoan(msg.sender, address(this), value, 0, data) == CALLBACK_SUCCESS,
-            "WADA: flash loan failed"
-        );
-        
-        // _decreaseAllowance(address(receiver), address(this), value);
-        uint256 allowed = allowance[address(receiver)][address(this)];
-        if (allowed != type(uint256).max) {
-            require(allowed >= value, "WADA: request exceeds allowance");
-            uint256 reduced = allowed - value;
-            allowance[address(receiver)][address(this)] = reduced;
-            emit Approval(address(receiver), address(this), reduced);
-        }
-
-        // _burnFrom(address(receiver), value);
-        uint256 balance = balanceOf[address(receiver)];
-        require(balance >= value, "WADA: burn amount exceeds balance");
-        balanceOf[address(receiver)] = balance - value;
-        emit Transfer(address(receiver), address(0), value);
-        
-        flashMinted = flashMinted - value;
-        return true;
     }
 
     /// @dev Burn `value` WADA10 token from caller account and withdraw matching ADA to the same.

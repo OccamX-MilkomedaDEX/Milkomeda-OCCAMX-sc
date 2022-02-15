@@ -2,8 +2,8 @@
   "_format": "hh-sol-cache-2",
   "files": {
     "/Users/anhdungle/Bitcoin.com/Milkomeda-OCCAMX-sc/contracts/Collector.sol": {
-      "lastModificationDate": 1644421195100,
-      "contentHash": "18926ea332bebb618f6ec41577c771af",
+      "lastModificationDate": 1644687864036,
+      "contentHash": "ef8872a67be7567a9af94a7a1ec95247",
       "sourceName": "contracts/Collector.sol",
       "solcConfig": {
         "version": "0.6.12",

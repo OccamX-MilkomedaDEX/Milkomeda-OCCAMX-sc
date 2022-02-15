@@ -13,9 +13,13 @@ async function main() {
 
     if (hre.network.name == "milkomedaTestnet") {
         factoryAddress = "0x428779a1A596c9cFdB68f5DaEf78b14901B95566";
-        collectorAddress = "0xa1350b1F57475D2a9D597cA6C489e7824EBeC516";
+        collectorAddress = "0x92A76FE5e70F4C9d44F6BD126ce61BFFB6563320";
         zeroAddress = "0x0000000000000000000000000000000000000000";
-    } 
+    } else if (hre.network.name == "milkomedaMainnet") {
+        factoryAddress = "0x2ef06A90b0E7Ae3ae508e83Ea6628a3987945460";
+        collectorAddress = "0x4F3807918347CDC4F2ac91C042b092923c816278";
+        zeroAddress = "0x0000000000000000000000000000000000000000";
+    }
 
     console.log(
     "Deploying contracts with the account:",

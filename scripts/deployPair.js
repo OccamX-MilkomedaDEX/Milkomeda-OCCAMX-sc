@@ -20,6 +20,10 @@ async function main() {
         routerAddress = "0xc50d1FFBe387DBeA8F52233f027e5f683e4CF194";
         token1Address = "0x7f9966C63862C1C1Db9f9b044fe3EA13472eCbB8";
         token2Address = "0x8AC64eb44Cfe8A35D6D2A244C370eCd33Cb3e273";
+    } else if (hre.network.name == "milkomedaMainnet") {
+        routerAddress = "0xe36B0C957Dd22d56F49e662fF49076C52d735d4c";
+        token1Address = "0xd8B49eb03A37Cb586141Af941DCE58996Ed7ffdA";
+        token2Address = "0x914f984D8766b9240185880c66D9547F62bEA9F2";
     }
 
 

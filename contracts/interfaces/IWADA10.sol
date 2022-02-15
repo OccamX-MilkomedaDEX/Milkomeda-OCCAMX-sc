@@ -5,11 +5,8 @@ pragma solidity ^0.6.0;
 
 import "./IERC20.sol";
 import "./IERC2612.sol";
-import "./IERC3156FlashLender.sol";
 
-interface IWADA10 is IERC20, IERC2612, IERC3156FlashLender {
-
-    function flashMinted() external view returns(uint256);
+interface IWADA10 is IERC20, IERC2612 {
 
     function deposit() external payable;
 

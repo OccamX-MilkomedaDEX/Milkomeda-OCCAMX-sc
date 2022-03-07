@@ -714,78 +714,6 @@
         "IERC20"
       ]
     },
-    "/Users/anhdungle/Bitcoin.com/Milkomeda-OCCAMX-sc/contracts/interfaces/IERC3156FlashBorrower.sol": {
-      "lastModificationDate": 1637909132840,
-      "contentHash": "7abfad117a6fad59c2a2e458e16e87ac",
-      "sourceName": "contracts/interfaces/IERC3156FlashBorrower.sol",
-      "solcConfig": {
-        "version": "0.7.6",
-        "settings": {
-          "optimizer": {
-            "enabled": false,
-            "runs": 200
-          },
-          "outputSelection": {
-            "*": {
-              "*": [
-                "abi",
-                "evm.bytecode",
-                "evm.deployedBytecode",
-                "evm.methodIdentifiers",
-                "metadata"
-              ],
-              "": [
-                "ast"
-              ]
-            }
-          }
-        }
-      },
-      "imports": [],
-      "versionPragmas": [
-        ">=0.6.0 <=0.8.0"
-      ],
-      "artifacts": [
-        "IERC3156FlashBorrower"
-      ]
-    },
-    "/Users/anhdungle/Bitcoin.com/Milkomeda-OCCAMX-sc/contracts/interfaces/IERC3156FlashLender.sol": {
-      "lastModificationDate": 1637909132841,
-      "contentHash": "e01ed0ac6e963409e6c12db75b001152",
-      "sourceName": "contracts/interfaces/IERC3156FlashLender.sol",
-      "solcConfig": {
-        "version": "0.7.6",
-        "settings": {
-          "optimizer": {
-            "enabled": false,
-            "runs": 200
-          },
-          "outputSelection": {
-            "*": {
-              "*": [
-                "abi",
-                "evm.bytecode",
-                "evm.deployedBytecode",
-                "evm.methodIdentifiers",
-                "metadata"
-              ],
-              "": [
-                "ast"
-              ]
-            }
-          }
-        }
-      },
-      "imports": [
-        "./IERC3156FlashBorrower.sol"
-      ],
-      "versionPragmas": [
-        ">=0.6.0 <=0.8.0"
-      ],
-      "artifacts": [
-        "IERC3156FlashLender"
-      ]
-    },
     "/Users/anhdungle/Bitcoin.com/Milkomeda-OCCAMX-sc/contracts/interfaces/ICallee.sol": {
       "lastModificationDate": 1637909132835,
       "contentHash": "dc0eb2f8a3bd24297648ff2def20f9da",
@@ -1032,8 +960,8 @@
       ]
     },
     "/Users/anhdungle/Bitcoin.com/Milkomeda-OCCAMX-sc/contracts/interfaces/IWADA10.sol": {
-      "lastModificationDate": 1638208882683,
-      "contentHash": "6a1b1e9c2a50c6a7a6b38282c85072fc",
+      "lastModificationDate": 1644944223821,
+      "contentHash": "9902c49c75ed93bfd69e35ba7ef80256",
       "sourceName": "contracts/interfaces/IWADA10.sol",
       "solcConfig": {
         "version": "0.6.12",
@@ -1060,8 +988,7 @@
       },
       "imports": [
         "./IERC20.sol",
-        "./IERC2612.sol",
-        "./IERC3156FlashLender.sol"
+        "./IERC2612.sol"
       ],
       "versionPragmas": [
         "^0.6.0"
@@ -1071,8 +998,8 @@
       ]
     },
     "/Users/anhdungle/Bitcoin.com/Milkomeda-OCCAMX-sc/contracts/WADA10.sol": {
-      "lastModificationDate": 1638197777273,
-      "contentHash": "93589726a23a90ee32de92dfc9629bd7",
+      "lastModificationDate": 1644944168356,
+      "contentHash": "246e56459c392f4279e0805930253bcb",
       "sourceName": "contracts/WADA10.sol",
       "solcConfig": {
         "version": "0.6.12",
@@ -1098,8 +1025,7 @@
         }
       },
       "imports": [
-        "./interfaces/IWADA10.sol",
-        "./interfaces/IERC3156FlashBorrower.sol"
+        "./interfaces/IWADA10.sol"
       ],
       "versionPragmas": [
         "^0.6.0"

@@ -17,7 +17,7 @@ async function main() {
         zeroAddress = "0x0000000000000000000000000000000000000000";
     } else if (hre.network.name == "milkomedaMainnet") {
         factoryAddress = "0x2ef06A90b0E7Ae3ae508e83Ea6628a3987945460";
-        collectorAddress = "0x4F3807918347CDC4F2ac91C042b092923c816278";
+        collectorAddress = "0xeB60C68B1735b903d1eDDF0a71012c817b076Ee7";
         zeroAddress = "0x0000000000000000000000000000000000000000";
     }
 

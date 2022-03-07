@@ -12,7 +12,7 @@ async function main() {
         PTAddress = "0xcE5eC4569b0ec9E9dE311dB566473234c337c443";
     } else if (hre.network.name == "milkomedaMainnet") {
         factoryAddress = "0x2ef06A90b0E7Ae3ae508e83Ea6628a3987945460";
-        WADAAddress = "0xEC42c7Dac7a8840E883b611E2da5ec5B0E03b3f8";
+        WADAAddress = "0xAE83571000aF4499798d1e3b0fA0070EB3A3E3F9";
         PTAddress = "0xcE5eC4569b0ec9E9dE311dB566473234c337c443";
     } 
 

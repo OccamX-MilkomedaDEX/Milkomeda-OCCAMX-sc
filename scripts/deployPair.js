@@ -14,7 +14,7 @@ async function main() {
 
     if (hre.network.name == "milkomedaTestnet") {
         routerAddress = "0x602153500e5f4F331044908249B1A6457Bd1a392";
-        token1Address = "0x4AD6B6B9a9C817C544D398d297dffbC77d64683B";
+        token1Address = "0xcE5eC4569b0ec9E9dE311dB566473234c337c443";
         token2Address = "0x01BbBB9C97FC43e3393E860fc8BbeaD47B6960dB";
     } else if (hre.network.name == "rinkeby") {
         routerAddress = "0xc50d1FFBe387DBeA8F52233f027e5f683e4CF194";
@@ -44,10 +44,9 @@ async function main() {
     const Token2Instance = await ethers.getContractAt("contracts/interfaces/IERC20.sol:IERC20", token2Address);
 
     const token1Amount = ethers.utils.parseEther("100000");
-    const token2Amount = ethers.utils.parseEther("5");
+    const token2Amount = ethers.utils.parseEther("1");
 
-    const wADAFactory = await ethers.getContractFactory("WADA10");
-    const wADAInstance = await wADAFactory.attach("0x01BbBB9C97FC43e3393E860fc8BbeaD47B6960dB");
+    const wADAInstance = await ethers.getContractAt("IWADA", "0x01BbBB9C97FC43e3393E860fc8BbeaD47B6960dB");
 
     if (token1Address === "0x01BbBB9C97FC43e3393E860fc8BbeaD47B6960dB") {
         await wADAInstance.deposit({value: token1Amount});

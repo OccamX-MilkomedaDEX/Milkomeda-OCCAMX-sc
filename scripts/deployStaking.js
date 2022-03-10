@@ -10,8 +10,8 @@ async function main() {
     if (hre.network.name == "milkomedaTestnet") {
         admin = deployer.address;
         rewardsTokenAddress = "0xcE5eC4569b0ec9E9dE311dB566473234c337c443"; //OCX
-        stakingTokenAddress = "0xcE5eC4569b0ec9E9dE311dB566473234c337c443"; //OCX
-        unstakingFeeRatio = 400;
+        stakingTokenAddress = "0x30aa7F615E8540f05a9707dE00E95469D77be613"; //OCX
+        unstakingFeeRatio = 0;
         emissionStart = 0;
         firstCheckPoint = 1620133780;
         rewardPerSecond = 0;

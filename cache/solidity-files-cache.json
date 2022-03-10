@@ -855,8 +855,8 @@
       ]
     },
     "/Users/anhdungle/Bitcoin.com/Milkomeda-OCCAMX-sc/contracts/interfaces/IERC20Burnable.sol": {
-      "lastModificationDate": 1637909132837,
-      "contentHash": "b8a82cf47932dde8370e1443b68cfc20",
+      "lastModificationDate": 1646912497856,
+      "contentHash": "064fb329de6887e6cf730bfb975a2631",
       "sourceName": "contracts/interfaces/IERC20Burnable.sol",
       "solcConfig": {
         "version": "0.7.6",
@@ -995,45 +995,6 @@
       ],
       "artifacts": [
         "IWADA10"
-      ]
-    },
-    "/Users/anhdungle/Bitcoin.com/Milkomeda-OCCAMX-sc/contracts/WADA10.sol": {
-      "lastModificationDate": 1644944168356,
-      "contentHash": "246e56459c392f4279e0805930253bcb",
-      "sourceName": "contracts/WADA10.sol",
-      "solcConfig": {
-        "version": "0.6.12",
-        "settings": {
-          "optimizer": {
-            "enabled": false,
-            "runs": 200
-          },
-          "outputSelection": {
-            "*": {
-              "*": [
-                "abi",
-                "evm.bytecode",
-                "evm.deployedBytecode",
-                "evm.methodIdentifiers",
-                "metadata"
-              ],
-              "": [
-                "ast"
-              ]
-            }
-          }
-        }
-      },
-      "imports": [
-        "./interfaces/IWADA10.sol"
-      ],
-      "versionPragmas": [
-        "^0.6.0"
-      ],
-      "artifacts": [
-        "IApprovalReceiver",
-        "ITransferReceiver",
-        "WADA10"
       ]
     },
     "/Users/anhdungle/Bitcoin.com/Milkomeda-OCCAMX-sc/contracts/libraries/TransferHelper.sol": {
@@ -1402,6 +1363,193 @@
       ],
       "artifacts": [
         "CalHash"
+      ]
+    },
+    "/Users/anhdungle/Bitcoin.com/Milkomeda-OCCAMX-sc/contracts/Staking.sol": {
+      "lastModificationDate": 1646912620701,
+      "contentHash": "5373743f76daf49d3df0ecb7d9527ae3",
+      "sourceName": "contracts/Staking.sol",
+      "solcConfig": {
+        "version": "0.6.12",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "@openzeppelin/contracts/math/Math.sol",
+        "@openzeppelin/contracts/math/SafeMath.sol",
+        "@openzeppelin/contracts/token/ERC20/SafeERC20.sol",
+        "@openzeppelin/contracts/token/ERC20/IERC20.sol",
+        "@openzeppelin/contracts/utils/ReentrancyGuard.sol",
+        "./Ownable.sol",
+        "./interfaces/IERC20Burnable.sol"
+      ],
+      "versionPragmas": [
+        "^0.6.0"
+      ],
+      "artifacts": [
+        "Staking"
+      ]
+    },
+    "/Users/anhdungle/Bitcoin.com/Milkomeda-OCCAMX-sc/node_modules/@openzeppelin/contracts/utils/ReentrancyGuard.sol": {
+      "lastModificationDate": 1637909149796,
+      "contentHash": "1c60f58cee45c61469e1aea31e4dd879",
+      "sourceName": "@openzeppelin/contracts/utils/ReentrancyGuard.sol",
+      "solcConfig": {
+        "version": "0.7.6",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        ">=0.6.0 <0.8.0"
+      ],
+      "artifacts": [
+        "ReentrancyGuard"
+      ]
+    },
+    "/Users/anhdungle/Bitcoin.com/Milkomeda-OCCAMX-sc/node_modules/@openzeppelin/contracts/token/ERC20/SafeERC20.sol": {
+      "lastModificationDate": 1637909149820,
+      "contentHash": "33e22842646d746e5c4124c2fdc051aa",
+      "sourceName": "@openzeppelin/contracts/token/ERC20/SafeERC20.sol",
+      "solcConfig": {
+        "version": "0.7.6",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "./IERC20.sol",
+        "../../math/SafeMath.sol",
+        "../../utils/Address.sol"
+      ],
+      "versionPragmas": [
+        ">=0.6.0 <0.8.0"
+      ],
+      "artifacts": [
+        "SafeERC20"
+      ]
+    },
+    "/Users/anhdungle/Bitcoin.com/Milkomeda-OCCAMX-sc/node_modules/@openzeppelin/contracts/utils/Address.sol": {
+      "lastModificationDate": 1637909148727,
+      "contentHash": "7aa46886ff5abe7515496208a5e2ce5a",
+      "sourceName": "@openzeppelin/contracts/utils/Address.sol",
+      "solcConfig": {
+        "version": "0.7.6",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        ">=0.6.2 <0.8.0"
+      ],
+      "artifacts": [
+        "Address"
+      ]
+    },
+    "/Users/anhdungle/Bitcoin.com/Milkomeda-OCCAMX-sc/node_modules/@openzeppelin/contracts/math/Math.sol": {
+      "lastModificationDate": 1637909149593,
+      "contentHash": "e5c844515b04deabacef7eb872abc384",
+      "sourceName": "@openzeppelin/contracts/math/Math.sol",
+      "solcConfig": {
+        "version": "0.7.6",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        ">=0.6.0 <0.8.0"
+      ],
+      "artifacts": [
+        "Math"
       ]
     }
   }

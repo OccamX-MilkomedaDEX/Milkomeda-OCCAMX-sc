@@ -17,4 +17,8 @@ interface IERC20Burnable {
     function transfer(address to, uint value) external returns (bool);
     function transferFrom(address from, address to, uint value) external returns (bool);
     function burn(uint256 amount) external;
+
+    function safeTransfer(address to, uint value) external returns (bool);
+    function safeTransferFrom(address from, address to, uint value) external returns (bool);
+
 }

@@ -1,4 +1,4 @@
-pragma solidity ^0.7.6;
+pragma solidity ^0.6.0;
 
 import "@openzeppelin/contracts/math/Math.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
@@ -115,7 +115,7 @@ contract Staking is ReentrancyGuard, Ownable() {
         require(amount > 0, "StakingImp: Cannot stake 0");
         totalStake = totalStake.add(amount);
         stakes[msg.sender] = stakes[msg.sender].add(amount);
-        stakingToken.safeTransferFrom(msg.sender, address(this), amount);
+        stakingToken.transferFrom(msg.sender, address(this), amount);
         emit Staked(msg.sender, amount);
     }
 
@@ -126,7 +126,7 @@ contract Staking is ReentrancyGuard, Ownable() {
         require(stakes[msg.sender] >= amount, "StakingImp: INSUFFICIENT_STAKE");
         stakes[msg.sender] = stakes[msg.sender].sub(amount);
         totalStake = totalStake.sub(amount);
-        stakingToken.safeTransfer(msg.sender, amountWithoutFee);
+        stakingToken.transfer(msg.sender, amountWithoutFee);
         if (feeBurn) {
             stakingToken.burn(unstakingFee);
             emit FeeBurned(unstakingFee);
@@ -160,7 +160,7 @@ contract Staking is ReentrancyGuard, Ownable() {
     function withdrawFee(uint256 amount) public nonReentrant onlyOwner {
         uint totalFee = stakingToken.balanceOf(address(this)).sub(totalStake);
         require(amount <= totalFee, "StakingImp: not enough fee.");
-        stakingToken.safeTransfer(owner, amount);
+        stakingToken.transfer(owner, amount);
         emit FeeCollected(amount);
 
     } 
@@ -169,7 +169,7 @@ contract Staking is ReentrancyGuard, Ownable() {
         uint256 reward = rewards[msg.sender];
         if (reward > 0) {
             rewards[msg.sender] = 0;
-            rewardsToken.safeTransfer(msg.sender, reward);
+            rewardsToken.transfer(msg.sender, reward);
             emit RewardPaid(msg.sender, reward);
         }
     }

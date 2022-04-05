@@ -29,9 +29,11 @@ async function main() {
     const FactoryInstance = await ethers.getContractAt("Factory", factoryAddress);
     
     const allPairsLength = await FactoryInstance.allPairsLength();
-    const lastPairAddress = await FactoryInstance.allPairs(allPairsLength - 1);
+    const pairIndex = allPairsLength - 1
+    /* const lastPairAddress = await FactoryInstance.allPairs(pairIndex); */
+    const lastPairAddress = "0x15E97979F1a7B9cf09B608F5bbE8d34494EBE807";
 
-    console.log(lastPairAddress);
+    console.log(`pair address ${lastPairAddress}`);
 
     const lastPair = await ethers.getContractAt("Pair", lastPairAddress);
     
@@ -47,6 +49,18 @@ async function main() {
     console.log(`token 0 ${lastPairToken0}`);
     console.log(`token 1 ${lastPairToken1}`);
 
+    const Token0Instance = await ethers.getContractAt("ProtocolToken", lastPairToken0);
+    const Token1Instance = await ethers.getContractAt("ProtocolToken", lastPairToken1);
+
+    console.log(`token0 name ${await Token0Instance.name()}`);
+    console.log(`token1 name ${await Token1Instance.name()}`);
+    const token0Decimals = await Token0Instance.decimals();
+    const token1Decimals = await Token1Instance.decimals();
+    console.log(`token0 decimals ${token0Decimals}`);
+    console.log(`token1 decimals ${token1Decimals}`);
+    console.log(`token0 supply in pair ${await Token0Instance.balanceOf(lastPairAddress)}`);
+    console.log(`token1 supply in pair ${await Token1Instance.balanceOf(lastPairAddress)}`);
+
 }
 
 main()
@@ -55,3 +69,8 @@ main()
     console.error(error);
     process.exit(1);
     });
+
+// mainnet:
+// USDT/milkADA LT 0xA74A72b796b94a215BF618b89C786b9240fd04EF, LM 0x52e5ab28e0e1ae31F47E641232E555E45aA1B633
+// USDC/milkADA LT 0xB56964a0617b2b760C8B6D8040e99cda29D5203b, LM 0x7862cb7000219b7b6EDB3f19Be6146ac71f1bfeE
+// wBTC/milkADA LT 0x2B5927056688961aF2B9321A3C54eA7805D86FD1, LM 0xD858B37Bc72A999D761d7F02C455Af33889527e3

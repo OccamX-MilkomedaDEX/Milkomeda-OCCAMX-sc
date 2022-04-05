@@ -8,7 +8,7 @@ import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "./Ownable.sol";
 import "./interfaces/IERC20Burnable.sol";
 
-contract Staking is ReentrancyGuard, Ownable() {
+contract StakingImp is ReentrancyGuard, Ownable() {
     using SafeMath for uint256;
     using SafeERC20 for IERC20;
     using SafeERC20 for IERC20Burnable;
@@ -36,10 +36,11 @@ contract Staking is ReentrancyGuard, Ownable() {
     mapping(address => uint256) public stakes;
 
     bool public feeBurn = false;
+    bool public initialized = false;
 
     /* ========== CONSTRUCTOR ========== */
 
-    constructor(
+    function initialize(
         address _rewardsToken,
         address _stakingToken,
         uint emissionStart,
@@ -49,6 +50,7 @@ contract Staking is ReentrancyGuard, Ownable() {
         bool _feeBurn,
         uint _unstakingFeeRatio
     ) public {
+        require(initialized == false, "StakingImp: contract has already been initialized.");
         rewardsToken = IERC20(_rewardsToken);
         stakingToken = IERC20Burnable(_stakingToken);
         if (checkPoints.length == 0) {
@@ -59,6 +61,7 @@ contract Staking is ReentrancyGuard, Ownable() {
         owner = admin;
         feeBurn = _feeBurn;
         unstakingFeeRatio = _unstakingFeeRatio;
+        initialized = true;
     }
 
     function updateSchedule(uint checkPoint, uint _rewardPerSecond) public onlyOwner {

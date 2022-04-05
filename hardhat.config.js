@@ -31,7 +31,9 @@ module.exports = {
         },
     milkomedaTestnet: {
         url: process.env.MilkomedaTestnetAPI,
-        accounts: [ process.env.MilkomedaTestnetDeployerPrivateKey ],
+        accounts: [ process.env.MilkomedaTestnetDeployerPrivateKey,
+                    process.env.MilkomedaTestnetUser1PrivateKey,
+                    process.env.MilkomedaTestnetUser2PrivateKey ],
         },
     milkomedaMainnet: {
     url: process.env.MilkomedaMainnetAPI,

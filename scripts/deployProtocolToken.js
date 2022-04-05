@@ -3,8 +3,8 @@ const {utils} = require("ethers");
 
 async function main() {
 
-    let tokenName = "Test2";
-    let ticker = "Test2";
+    let tokenName = "OCX";
+    let ticker = "OCX";
     let supply = utils.parseEther("100000000");
     /* let supply = utils.parseUnits("100000000", "gwei"); */
 
@@ -12,7 +12,12 @@ async function main() {
 
     const [deployer] = await hre.ethers.getSigners();
 
-    let holder = deployer.address;
+    let holder;
+    if (hre.network.name == "milkomedaTestnet") {
+        holder = deployer.address;
+    } else if (hre.network.name == "milkomedaMainnet") {
+        holder = "0x394195f788541166DFf932a828455a8a940d75d4";
+    }
 
     console.log(
     "Deploying contracts with the account:",

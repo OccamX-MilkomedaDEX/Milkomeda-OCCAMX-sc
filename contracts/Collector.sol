@@ -97,7 +97,7 @@ contract Collector is Ownable {
         address[] calldata token0,
         address[] calldata token1
     ) external onlyEOA() onlyWhenUnlocked() onlyOwner {
-        // TODO: This can be optimized a fair bit, but this is safer and simpler for now
+        require(token0.length == token1.length, "the length of the array is invalid");
         uint256 len = token0.length;
         for (uint256 i = 0; i < len; i++) {
             _convert(token0[i], token1[i]);

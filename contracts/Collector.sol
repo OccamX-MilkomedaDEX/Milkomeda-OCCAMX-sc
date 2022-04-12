@@ -89,14 +89,14 @@ contract Collector is Ownable {
         locked = _locked;
     }
 
-    function convert(address token0, address token1) external onlyEOA() onlyWhenUnlocked() {
+    function convert(address token0, address token1) external onlyEOA() onlyWhenUnlocked() onlyOwner {
         _convert(token0, token1);
     }
 
     function convertMultiple(
         address[] calldata token0,
         address[] calldata token1
-    ) external onlyEOA() onlyWhenUnlocked() {
+    ) external onlyEOA() onlyWhenUnlocked() onlyOwner {
         // TODO: This can be optimized a fair bit, but this is safer and simpler for now
         uint256 len = token0.length;
         for (uint256 i = 0; i < len; i++) {

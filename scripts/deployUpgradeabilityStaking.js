@@ -29,12 +29,12 @@ async function main() {
         proxyOwner = "0x394195f788541166DFf932a828455a8a940d75d4";
         logicsOwner = deployer.address;
         rewardsTokenAddress = "0xf0c73E6287867bAa4F865A17EE711ec989c78AC0";
-        stakingTokenAddress = "0x15E97979F1a7B9cf09B608F5bbE8d34494EBE807";
+        stakingTokenAddress = "0xA7E93E4d51f9574af006ebBFDAa32BEF858c9693";
         unstakingFeeRatio = 0;
         // !!! Check timelock for both unstaking fee and implemetation change
-        emissionStart = 1648404777;
-        firstCheckPoint = 1648634400;
-        rewardPerSecond = 0;
+        emissionStart = 1649514197;
+        firstCheckPoint = 1650118997;
+        rewardPerSecond = 10000000000000;
         feeBurn = false;
     }
         

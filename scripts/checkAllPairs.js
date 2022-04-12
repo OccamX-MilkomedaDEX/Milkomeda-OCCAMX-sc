@@ -31,7 +31,7 @@ async function main() {
     const allPairsLength = await FactoryInstance.allPairsLength();
     const pairIndex = allPairsLength - 1
     /* const lastPairAddress = await FactoryInstance.allPairs(pairIndex); */
-    const lastPairAddress = "0x15E97979F1a7B9cf09B608F5bbE8d34494EBE807";
+    const lastPairAddress = "0xA7E93E4d51f9574af006ebBFDAa32BEF858c9693";
 
     console.log(`pair address ${lastPairAddress}`);
 

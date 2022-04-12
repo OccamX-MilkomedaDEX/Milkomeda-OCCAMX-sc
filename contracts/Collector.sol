@@ -6,7 +6,6 @@ pragma solidity ^0.6.0;
 import "./libraries/SafeMath.sol";
 import "./libraries/SafeERC20.sol";
 
-import "./interfaces/IERC20Permit.sol";
 import "./interfaces/IERC20.sol";
 import "./interfaces/IPair.sol";
 import "./interfaces/IFactory.sol";

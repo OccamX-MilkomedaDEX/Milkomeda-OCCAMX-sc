@@ -22,19 +22,19 @@ async function main() {
         stakingTokenAddress = "0x2f109021afe75b949429fe30523ee7c0d5b27207";
         unstakingFeeRatio = 400;
         // !!! Check timelock for both unstaking fee and implemetation change
-        emissionStart = 0;
-        firstCheckPoint = 1622541600;
-        rewardPerSecond = 0;
+        emissionStart = 1649872800;
+        firstCheckPoint = 1651082400;
+        rewardPerSecond = utils.parseEther("0.004571119302556900");
     } else if (hre.network.name == "milkomedaMainnet") {
         proxyOwner = "0x394195f788541166DFf932a828455a8a940d75d4";
         logicsOwner = deployer.address;
         rewardsTokenAddress = "0xf0c73E6287867bAa4F865A17EE711ec989c78AC0";
-        stakingTokenAddress = "0xA7E93E4d51f9574af006ebBFDAa32BEF858c9693";
+        stakingTokenAddress = "0x2d11793D1843973840A6e6781064a22fffe3FAba";
         unstakingFeeRatio = 0;
         // !!! Check timelock for both unstaking fee and implemetation change
-        emissionStart = 1649514197;
-        firstCheckPoint = 1650118997;
-        rewardPerSecond = 10000000000000;
+        emissionStart = 1649872800;
+        firstCheckPoint = 1651082400;
+        rewardPerSecond = utils.parseEther("0.004571119302556900");
         feeBurn = false;
     }
         

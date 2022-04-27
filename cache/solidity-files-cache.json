@@ -2,8 +2,8 @@
   "_format": "hh-sol-cache-2",
   "files": {
     "/Users/anhdungle/Bitcoin.com/Milkomeda-OCCAMX-sc/contracts/Collector.sol": {
-      "lastModificationDate": 1644687864036,
-      "contentHash": "ef8872a67be7567a9af94a7a1ec95247",
+      "lastModificationDate": 1649755684604,
+      "contentHash": "1c2b61cb7078647583a53522a488c1f8",
       "sourceName": "contracts/Collector.sol",
       "solcConfig": {
         "version": "0.6.12",
@@ -31,7 +31,6 @@
       "imports": [
         "./libraries/SafeMath.sol",
         "./libraries/SafeERC20.sol",
-        "./interfaces/IERC20Permit.sol",
         "./interfaces/IERC20.sol",
         "./interfaces/IPair.sol",
         "./interfaces/IFactory.sol",

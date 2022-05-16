@@ -8,7 +8,7 @@ async function main() {
 
     console.log(`operating on network ${hre.network.name}`)
     if (hre.network.name == "milkomedaTestnet") {
-        stakingAddress = "0xFD1E565D25F224a0360ff45ff8Bb73Fd0B0E2854";
+        stakingAddress = "0x574A2Afbc354eD3a905200108216B15C2CE9f4dA";
     } else if (hre.network.name == "mainnet") {
     }
 
@@ -24,12 +24,11 @@ async function main() {
     const stakingTokenAddress = await StakingInstance.stakingToken();
     const stakingTokenInstance = await TokenFactory.attach(stakingTokenAddress); */
 
-    let newEpochStartTime = 1649857350;
-    let newEpochEndTime = 1681393150;
-    let newReward = utils.parseEther("0.0001");
+    let newEpochEndTime = 1653501600;  // TODO: adjust this with every update
+    let newReward = utils.parseEther("0.049875582885905600");  // TODO: adjust this with every LM to update
 
-    if (hre.network.name == "milkomedaTestnet") {
-        let stakingAddresses = ["0xFD1E565D25F224a0360ff45ff8Bb73Fd0B0E2854"];
+    if (hre.network.name == "milkomedaMainnet") {
+        let stakingAddresses = []; // TODO: adjust this with every LM to update
         for (let i = 0; i < stakingAddresses.length; i++) {
             stakingAddress = stakingAddresses[i];
             console.log(`setting epochs for staking address ${stakingAddress}`);
@@ -43,7 +42,7 @@ async function main() {
             console.log(`reward token address is ${await rewardsTokenInstance.name()}`);
             console.log(`staking token address is ${await stakingTokenInstance.name()}`);
 
-            let firstTx = await StakingInstance.updateSchedule(newEpochStartTime, 0);
+            let firstTx = await StakingInstance.updateSchedule(newEpochEndTime, newReward);
             let firstTxHash = firstTx.hash;
 
             while ((await hre.ethers.provider.getTransactionReceipt(firstTxHash)) == null) {
@@ -51,13 +50,13 @@ async function main() {
                 await sleep(10);
             }
 
-            let secondTx = await StakingInstance.updateSchedule(newEpochEndTime, newReward);
-            let secondTxHash = secondTx.hash;
+            // let secondTx = await StakingInstance.updateSchedule(newEpochEndTime, newReward);
+            // let secondTxHash = secondTx.hash;
 
-            while ((await hre.ethers.provider.getTransactionReceipt(secondTxHash)) == null) {
-                console.log(`waiting for the second set schedule transaction to be finished.`);
-                await sleep(10);
-            }
+            // while ((await hre.ethers.provider.getTransactionReceipt(secondTxHash)) == null) {
+            //     console.log(`waiting for the second set schedule transaction to be finished.`);
+            //     await sleep(10);
+            // }
             console.log(`------------------------`)
         }
     }

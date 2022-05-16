@@ -6,6 +6,7 @@ require("@nomiclabs/hardhat-waffle");
 require("@nomiclabs/hardhat-etherscan"); 
 require("@nomiclabs/hardhat-ethers");
 require("hardhat-contract-sizer");
+require("@typechain/hardhat");
 
 
 const { utils } = require("ethers");

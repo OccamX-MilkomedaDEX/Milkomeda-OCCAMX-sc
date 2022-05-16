@@ -29,10 +29,6 @@ module.exports = {
         ],   
     },
   networks: {
-    rinkeby: {
-        url: process.env.RinkebyInfuraAPI,
-        accounts: [ process.env.RinkebyWhiteLabelDeployerPrivateKey ],
-        },
     milkomedaTestnet: {
         url: process.env.MilkomedaTestnetAPI,
         accounts: [ process.env.MilkomedaTestnetDeployerPrivateKey,
@@ -42,18 +38,7 @@ module.exports = {
     milkomedaMainnet: {
     url: process.env.MilkomedaMainnetAPI,
     accounts: [ process.env.MilkomedaMainnetDeployerPrivateKey ],
-        },
-    mainnet: {
-        url: process.env.MainnetAlchemyAPI,
-        accounts: [ process.env.RazerPersonalPrivateKey ],
-        },
-    BSC: {
-            url: process.env.BSCRPCURL,
-            accounts: [ process.env.StarlyDeployerPrivateKey]
         }
-    },
-    etherscan: {
-        apiKey: process.env.EtherscanApiKey,
     }
 };
 

@@ -1,3 +1,7 @@
+// loading variables from .env
+require('dotenv').config();
+const process = require('process');
+
 require("@nomiclabs/hardhat-waffle");
 require("@nomiclabs/hardhat-etherscan"); 
 require("@nomiclabs/hardhat-ethers");

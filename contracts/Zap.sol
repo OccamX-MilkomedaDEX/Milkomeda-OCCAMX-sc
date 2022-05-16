@@ -10,44 +10,36 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Affero General Public License for more details.
 
-// @author Zwilling, forked from Wivern for Beefy.Finance (https://github.com/beefyfinance/beefy-contracts/blob/b4f0ab0394b9316e40596b2d8066ee94398449dd/contracts/BIFI/zaps/BeefyZapUniswapV2.txt)
+// @author Zwilling for OccamX, forked from Wivern for Beefy.Finance (https://github.com/beefyfinance/beefy-contracts/blob/b4f0ab0394b9316e40596b2d8066ee94398449dd/contracts/BIFI/zaps/BeefyZapUniswapV2.txt)
 // @notice This contract adds liquidity to Uniswap V2 compatible liquidity pair pools and stake.
 
-pragma solidity >=0.7.6;
+pragma solidity 0.6.12;
 
-import '@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol';
+import '@openzeppelin/contracts/token/ERC20/SafeERC20.sol';
 import '@uniswap/lib/contracts/libraries/Babylonian.sol';
-import '@uniswap/v2-core/contracts/interfaces/IUniswapV2Pair.sol';
-import '@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol';
-import '@uniswap/v3-core/contracts/libraries/LowGasSafeMath.sol';
+import './interfaces/IPair.sol';
+import './interfaces/IRouter02.sol';
+import './libraries/Math.sol';
 
 interface IWETH is IERC20 {
     function deposit() external payable;
     function withdraw(uint256 wad) external;
 }
 
-interface IBeefyVault is IERC20 {
-    function deposit(uint256 amount) external;
-    function withdraw(uint256 shares) external;
-    function want() external pure returns (address); // Beefy Vault V6
-    function token() external pure returns (address); // Beefy Vault V5
-}
-
-contract BeefyZapUniswapV2 {
-    using LowGasSafeMath for uint256;
+contract ZapOccamX {
+    using SafeMath for uint256;
     using SafeERC20 for IERC20;
-    using SafeERC20 for IBeefyVault;
 
-    IUniswapV2Router02 public immutable router;
+    IRouter02 public immutable router;
     address public immutable WETH;
     uint256 public constant minimumAmount = 1000;
 
-    constructor(address _router, address _WETH) {
+    constructor(address _router, address _WETH) public {
         // Safety checks to ensure WETH token address
         IWETH(_WETH).deposit{value: 0}();
         IWETH(_WETH).withdraw(0);
 
-        router = IUniswapV2Router02(_router);
+        router = IRouter02(_router);
         WETH = _WETH;
     }
 
@@ -55,34 +47,37 @@ contract BeefyZapUniswapV2 {
         assert(msg.sender == WETH);
     }
 
-    function beefInETH (address beefyVault, uint256 tokenAmountOutMin) external payable {
-        require(msg.value >= minimumAmount, 'Beefy: Insignificant input amount');
+    /** TODO
+     */
+    function zapInETH (address pairAddr, uint256 tokenAmountOutMin) external payable {
+        require(msg.value >= minimumAmount, 'Zap: Insignificant input amount');
 
         IWETH(WETH).deposit{value: msg.value}();
 
-        _swapAndStake(beefyVault, tokenAmountOutMin, WETH);
+        _swapAndAddLiquidity(pairAddr, tokenAmountOutMin, WETH);
     }
 
-    function beefIn (address beefyVault, uint256 tokenAmountOutMin, address tokenIn, uint256 tokenInAmount) external {
-        require(tokenInAmount >= minimumAmount, 'Beefy: Insignificant input amount');
-        require(IERC20(tokenIn).allowance(msg.sender, address(this)) >= tokenInAmount, 'Beefy: Input token is not approved');
+    /** TODO
+     */
+    function zapIn (address pairAddr, uint256 tokenAmountOutMin, address tokenIn, uint256 tokenInAmount) external {
+        require(tokenInAmount >= minimumAmount, 'Zap: Insignificant input amount');
+        require(IERC20(tokenIn).allowance(msg.sender, address(this)) >= tokenInAmount, 'Zap: Input token is not approved');
 
         IERC20(tokenIn).safeTransferFrom(msg.sender, address(this), tokenInAmount);
 
-        _swapAndStake(beefyVault, tokenAmountOutMin, tokenIn);
+        _swapAndAddLiquidity(pairAddr, tokenAmountOutMin, tokenIn);
     }
 
-    function beefOut (address beefyVault, uint256 withdrawAmount) external {
-        (IBeefyVault vault, IUniswapV2Pair pair) = _getVaultPair(beefyVault);
-
-        IERC20(beefyVault).safeTransferFrom(msg.sender, address(this), withdrawAmount);
-        vault.withdraw(withdrawAmount);
+    /** TODO
+     */
+    function zapOut (address pairAddr, uint256 withdrawAmount) external {
+        IPair pair = IPair(pairAddr);
 
         if (pair.token0() != WETH && pair.token1() != WETH) {
-            return _removeLiquidity(address(pair), msg.sender);
+            return _removeLiquidity(pairAddr, msg.sender);
         }
 
-        _removeLiquidity(address(pair), address(this));
+        _removeLiquidity(pairAddr, address(this));
 
         address[] memory tokens = new address[](2);
         tokens[0] = pair.token0();
@@ -91,15 +86,15 @@ contract BeefyZapUniswapV2 {
         _returnAssets(tokens);
     }
 
-    function beefOutAndSwap(address beefyVault, uint256 withdrawAmount, address desiredToken, uint256 desiredTokenOutMin) external {
-        (IBeefyVault vault, IUniswapV2Pair pair) = _getVaultPair(beefyVault);
+    /** TODO
+     */
+    function zapOutAndSwap(address pairAddr, uint256 withdrawAmount, address desiredToken, uint256 desiredTokenOutMin) external {
+        IPair pair = IPair(pairAddr);
         address token0 = pair.token0();
         address token1 = pair.token1();
-        require(token0 == desiredToken || token1 == desiredToken, 'Beefy: desired token not present in liquidity pair');
+        require(token0 == desiredToken || token1 == desiredToken, 'Zap: desired token not present in liquidity pair');
 
-        vault.safeTransferFrom(msg.sender, address(this), withdrawAmount);
-        vault.withdraw(withdrawAmount);
-        _removeLiquidity(address(pair), address(this));
+        _removeLiquidity(pairAddr, address(this));
 
         address swapToken = token1 == desiredToken ? token0 : token1;
         address[] memory path = new address[](2);
@@ -114,32 +109,20 @@ contract BeefyZapUniswapV2 {
 
     function _removeLiquidity(address pair, address to) private {
         IERC20(pair).safeTransfer(pair, IERC20(pair).balanceOf(address(this)));
-        (uint256 amount0, uint256 amount1) = IUniswapV2Pair(pair).burn(to);
+        (uint256 amount0, uint256 amount1) = IPair(pair).burn(to);
 
-        require(amount0 >= minimumAmount, 'UniswapV2Router: INSUFFICIENT_A_AMOUNT');
-        require(amount1 >= minimumAmount, 'UniswapV2Router: INSUFFICIENT_B_AMOUNT');
+        require(amount0 >= minimumAmount, 'Router: INSUFFICIENT_A_AMOUNT');
+        require(amount1 >= minimumAmount, 'Router: INSUFFICIENT_B_AMOUNT');
     }
 
-    function _getVaultPair (address beefyVault) private view returns (IBeefyVault vault, IUniswapV2Pair pair) {
-        vault = IBeefyVault(beefyVault);
-
-        try vault.want() returns (address pairAddress) {
-            pair = IUniswapV2Pair(pairAddress); // Vault V6
-        } catch {
-            pair = IUniswapV2Pair(vault.token()); // Vault V5
-        }
-
-        require(pair.factory() == router.factory(), 'Beefy: Incompatible liquidity pair factory');
-    }
-
-    function _swapAndStake(address beefyVault, uint256 tokenAmountOutMin, address tokenIn) private {
-        (IBeefyVault vault, IUniswapV2Pair pair) = _getVaultPair(beefyVault);
+    function _swapAndAddLiquidity(address pairAddr, uint256 tokenAmountOutMin, address tokenIn) private {
+        IPair pair = IPair(pairAddr);
 
         (uint256 reserveA, uint256 reserveB,) = pair.getReserves();
-        require(reserveA > minimumAmount && reserveB > minimumAmount, 'Beefy: Liquidity pair reserves too low');
+        require(reserveA > minimumAmount && reserveB > minimumAmount, 'Zap: Liquidity pair reserves too low');
 
         bool isInputA = pair.token0() == tokenIn;
-        require(isInputA || pair.token1() == tokenIn, 'Beefy: Input token not present in liquidity pair');
+        require(isInputA || pair.token1() == tokenIn, 'Zap: Input token not present in liquidity pair');
 
         address[] memory path = new address[](2);
         path[0] = tokenIn;
@@ -161,11 +144,7 @@ contract BeefyZapUniswapV2 {
         (,, uint256 amountLiquidity) = router
             .addLiquidity(path[0], path[1], fullInvestment.sub(swapedAmounts[0]), swapedAmounts[1], 1, 1, address(this), block.timestamp);
 
-        _approveTokenIfNeeded(address(pair), address(vault));
-        vault.deposit(amountLiquidity);
-
-        vault.safeTransfer(msg.sender, vault.balanceOf(address(this)));
-        _returnAssets(path);
+        // TODO: add possibility to stake for liquidity mining
     }
 
     function _returnAssets(address[] memory tokens) private {
@@ -176,7 +155,7 @@ contract BeefyZapUniswapV2 {
                 if (tokens[i] == WETH) {
                     IWETH(WETH).withdraw(balance);
                     (bool success,) = msg.sender.call{value: balance}(new bytes(0));
-                    require(success, 'Beefy: ETH transfer failed');
+                    require(success, 'Zap: ETH transfer failed');
                 } else {
                     IERC20(tokens[i]).safeTransfer(msg.sender, balance);
                 }
@@ -191,11 +170,11 @@ contract BeefyZapUniswapV2 {
         swapAmount = investmentA.sub(Babylonian.sqrt(halfInvestment * halfInvestment * nominator / denominator));
     }
 
-    function estimateSwap(address beefyVault, address tokenIn, uint256 fullInvestmentIn) public view returns(uint256 swapAmountIn, uint256 swapAmountOut, address swapTokenOut) {
-        (, IUniswapV2Pair pair) = _getVaultPair(beefyVault);
+    function estimateSwap(address pairAddr, address tokenIn, uint256 fullInvestmentIn) public view returns(uint256 swapAmountIn, uint256 swapAmountOut, address swapTokenOut) {
+        IPair pair = IPair(pairAddr);
 
         bool isInputA = pair.token0() == tokenIn;
-        require(isInputA || pair.token1() == tokenIn, 'Beefy: Input token not present in liquidity pair');
+        require(isInputA || pair.token1() == tokenIn, 'Zap: Input token not present in liquidity pair');
 
         (uint256 reserveA, uint256 reserveB,) = pair.getReserves();
         (reserveA, reserveB) = isInputA ? (reserveA, reserveB) : (reserveB, reserveA);
@@ -210,5 +189,4 @@ contract BeefyZapUniswapV2 {
             IERC20(token).safeApprove(spender, type(uint256).max);
         }
     }
-
 }

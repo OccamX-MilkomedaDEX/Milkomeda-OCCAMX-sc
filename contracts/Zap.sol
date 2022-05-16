@@ -13,7 +13,7 @@
 // @author Zwilling for OccamX, forked from Wivern for Beefy.Finance (https://github.com/beefyfinance/beefy-contracts/blob/b4f0ab0394b9316e40596b2d8066ee94398449dd/contracts/BIFI/zaps/BeefyZapUniswapV2.txt)
 // @notice This contract adds liquidity to Uniswap V2 compatible liquidity pair pools and stake.
 
-pragma solidity 0.6.12;
+pragma solidity 0.6.12; // chose this version to be compatible with the imported interfaces
 
 import '@openzeppelin/contracts/token/ERC20/SafeERC20.sol';
 import '@uniswap/lib/contracts/libraries/Babylonian.sol';
@@ -72,6 +72,7 @@ contract ZapOccamX {
      */
     function zapOut (address pairAddr, uint256 withdrawAmount) external {
         IPair pair = IPair(pairAddr);
+        IERC20(pairAddr).safeTransferFrom(msg.sender, address(this), withdrawAmount);
 
         if (pair.token0() != WETH && pair.token1() != WETH) {
             return _removeLiquidity(pairAddr, msg.sender);
@@ -90,6 +91,8 @@ contract ZapOccamX {
      */
     function zapOutAndSwap(address pairAddr, uint256 withdrawAmount, address desiredToken, uint256 desiredTokenOutMin) external {
         IPair pair = IPair(pairAddr);
+        IERC20(pairAddr).safeTransferFrom(msg.sender, address(this), withdrawAmount);
+        
         address token0 = pair.token0();
         address token1 = pair.token1();
         require(token0 == desiredToken || token1 == desiredToken, 'Zap: desired token not present in liquidity pair');

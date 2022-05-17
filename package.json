@@ -7,7 +7,7 @@
     "build": "npm run clean && npm run compile",
     "clean": "npx hardhat clean",
     "compile": "npx hardhat compile",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "npm run build && npx hardhat test"
   },
   "author": "",
   "license": "ISC",

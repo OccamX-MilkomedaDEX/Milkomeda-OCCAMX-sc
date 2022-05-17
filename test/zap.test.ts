@@ -60,7 +60,7 @@ describe('Zap', () => {
 		// wADA is for wrapped ADA on Milkomeda, so it is the WETH equivalent
 		const wAdaFactory = await hre.ethers.getContractFactory("WETH9", deployer);
         wADA = await wAdaFactory.deploy() as WETH9;
-		liquidityWAda = utils.parseEther("0.5");
+		liquidityWAda = utils.parseEther("1");
 
 		const factoryFactory = await hre.ethers.getContractFactory("Factory", deployer);
         factory = await factoryFactory.deploy(deployer.address);
@@ -114,5 +114,24 @@ describe('Zap', () => {
 
 		await zap.connect(user1).zapIn(pair12.address, minSwapAmount, coin2.address, inputAmount);
 		expect(await pair12.balanceOf(user1.address)).to.be.gt(utils.parseEther("0.003")); // receive some liquidity tokens
+	});
+
+	it('should zap into wADA-token pair with ADA', async () => {
+		const inputAmount = utils.parseEther("0.1");
+		const minSwapAmount = utils.parseEther("0.13"); // half the input, three times for pool price, minus some slippage
+
+		await zap.connect(user1).zapInETH(pair3Ada.address, minSwapAmount, {value: inputAmount});
+		console.log(await pair3Ada.balanceOf(user1.address));
+		expect(await pair3Ada.balanceOf(user1.address)).to.be.gt(utils.parseEther("0.08")); // receive some liquidity tokens
+	});
+
+	it('should zap into wADA-token pair with token', async () => {
+		const inputAmount = utils.parseEther("0.1");
+		const minSwapAmount = utils.parseEther("0.015"); // half the input, a third for pool price, minus some slippage
+		await coin3.mint(user1.address, inputAmount);
+		await coin3.connect(user1).approve(zap.address, inputAmount);
+
+		await zap.connect(user1).zapIn(pair3Ada.address, minSwapAmount, coin3.address, inputAmount);
+		expect(await pair3Ada.balanceOf(user1.address)).to.be.gt(utils.parseEther("0.002")); // receive some liquidity tokens
 	});
 });

@@ -68,56 +68,6 @@ contract ZapOccamX {
         _swapAndAddLiquidity(pairAddr, tokenAmountOutMin, tokenIn);
     }
 
-    /** TODO
-     */
-    function zapOut (address pairAddr, uint256 withdrawAmount) external {
-        IPair pair = IPair(pairAddr);
-        IERC20(pairAddr).safeTransferFrom(msg.sender, address(this), withdrawAmount);
-
-        if (pair.token0() != WETH && pair.token1() != WETH) {
-            return _removeLiquidity(pairAddr, msg.sender);
-        }
-
-        _removeLiquidity(pairAddr, address(this));
-
-        address[] memory tokens = new address[](2);
-        tokens[0] = pair.token0();
-        tokens[1] = pair.token1();
-
-        _returnAssets(tokens);
-    }
-
-    /** TODO
-     */
-    function zapOutAndSwap(address pairAddr, uint256 withdrawAmount, address desiredToken, uint256 desiredTokenOutMin) external {
-        IPair pair = IPair(pairAddr);
-        IERC20(pairAddr).safeTransferFrom(msg.sender, address(this), withdrawAmount);
-        
-        address token0 = pair.token0();
-        address token1 = pair.token1();
-        require(token0 == desiredToken || token1 == desiredToken, 'Zap: desired token not present in liquidity pair');
-
-        _removeLiquidity(pairAddr, address(this));
-
-        address swapToken = token1 == desiredToken ? token0 : token1;
-        address[] memory path = new address[](2);
-        path[0] = swapToken;
-        path[1] = desiredToken;
-
-        _approveTokenIfNeeded(path[0], address(router));
-        router.swapExactTokensForTokens(IERC20(swapToken).balanceOf(address(this)), desiredTokenOutMin, path, address(this), block.timestamp);
-
-        _returnAssets(path);
-    }
-
-    function _removeLiquidity(address pair, address to) private {
-        IERC20(pair).safeTransfer(pair, IERC20(pair).balanceOf(address(this)));
-        (uint256 amount0, uint256 amount1) = IPair(pair).burn(to);
-
-        require(amount0 >= minimumAmount, 'Router: INSUFFICIENT_A_AMOUNT');
-        require(amount1 >= minimumAmount, 'Router: INSUFFICIENT_B_AMOUNT');
-    }
-
     function _swapAndAddLiquidity(address pairAddr, uint256 tokenAmountOutMin, address tokenIn) private {
         IPair pair = IPair(pairAddr);
 
@@ -146,6 +96,8 @@ contract ZapOccamX {
         _approveTokenIfNeeded(path[1], address(router));
         (,, uint256 amountLiquidity) = router
             .addLiquidity(path[0], path[1], fullInvestment.sub(swapedAmounts[0]), swapedAmounts[1], 1, 1, address(this), block.timestamp);
+
+        _returnAssets([pairAddr]);
 
         // TODO: add possibility to stake for liquidity mining
     }

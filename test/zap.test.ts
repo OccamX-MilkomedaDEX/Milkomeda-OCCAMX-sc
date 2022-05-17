@@ -27,14 +27,22 @@ const { expect } = chai;
 
 describe('Zap', () => {
 	let zap: ZapOccamX;
-	let coin1, coin2, coin3: MockCoin;
-	let liquidity1, liquidity2, liquidity3, liquidityWAda: BigNumber;
+	let coin1: MockCoin;
+	let coin2: MockCoin;
+	let coin3: MockCoin;
+	let liquidity1: BigNumber;
+	let liquidity2: BigNumber;
+	let liquidity3: BigNumber;
+	let liquidityWAda: BigNumber;
 	let factory: Factory;
-	let pair12, pair3Ada: Pair;
+	let pair12: Pair;
+	let pair3Ada: Pair;
 	let router: Router02;
 	let wADA: WETH9;
 
-	let deployer, user1, user2: SignerWithAddress;
+	let deployer: SignerWithAddress;
+	let user1: SignerWithAddress;
+	let user2: SignerWithAddress;
 
 	beforeEach(async () => {
 		[ deployer, user1, user2 ] = await ethers.getSigners();
@@ -63,6 +71,7 @@ describe('Zap', () => {
 
 		// we want to test with one token-token pool and one token-wADA pool
 		let pairInterface = JSON.parse(fs.readFileSync('./artifacts/contracts/Pair.sol/Pair.json'))['abi'];
+		await factory.createPair(coin1.address, coin2.address);
 		const addressPair12 = await factory.getPair(coin1.address, coin2.address);
 		pair12 = (new hre.ethers.Contract(addressPair12, pairInterface, deployer)) as Pair;
 		await coin1.mint(deployer.address, liquidity1);
@@ -71,6 +80,7 @@ describe('Zap', () => {
         await coin2.connect(deployer).approve(router.address, liquidity2);
 		await router.connect(deployer).addLiquidity(coin1.address, coin2.address, liquidity1, liquidity2, 0, 0, deployer.address, 1000000000000000);
 
+		await factory.createPair(wADA.address, coin3.address);
 		const addressPair3Ada = await factory.getPair(wADA.address, coin3.address);
 		pair3Ada = (new hre.ethers.Contract(addressPair3Ada, pairInterface, deployer)) as Pair;
 		await coin3.mint(deployer.address, liquidity3);
@@ -84,5 +94,25 @@ describe('Zap', () => {
 
 	it('should construct the zap contract', async () => {
 		expect(zap.address).to.properAddress;
+	});
+
+	it('should zap into token-token pair', async () => {
+		const inputAmount = utils.parseEther("0.01");
+		const minSwapAmount = utils.parseEther("0.009"); // half the input, times two for pool price, minus some slippage
+		await coin1.mint(user1.address, inputAmount);
+		await coin1.connect(user1).approve(zap.address, inputAmount);
+
+		await zap.connect(user1).zapIn(pair12.address, minSwapAmount, coin1.address, inputAmount);
+		expect(await pair12.balanceOf(user1.address)).to.be.gt(utils.parseEther("0.007")); // receive some liquidity tokens
+	});
+
+	it('should zap into token-token pair with other input', async () => {
+		const inputAmount = utils.parseEther("0.01");
+		const minSwapAmount = utils.parseEther("0.0023"); // half the input, half for pool price, minus some slippage
+		await coin2.mint(user1.address, inputAmount);
+		await coin2.connect(user1).approve(zap.address, inputAmount);
+
+		await zap.connect(user1).zapIn(pair12.address, minSwapAmount, coin2.address, inputAmount);
+		expect(await pair12.balanceOf(user1.address)).to.be.gt(utils.parseEther("0.003")); // receive some liquidity tokens
 	});
 });

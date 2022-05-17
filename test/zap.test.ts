@@ -121,7 +121,6 @@ describe('Zap', () => {
 		const minSwapAmount = utils.parseEther("0.13"); // half the input, three times for pool price, minus some slippage
 
 		await zap.connect(user1).zapInETH(pair3Ada.address, minSwapAmount, {value: inputAmount});
-		console.log(await pair3Ada.balanceOf(user1.address));
 		expect(await pair3Ada.balanceOf(user1.address)).to.be.gt(utils.parseEther("0.08")); // receive some liquidity tokens
 	});
 
@@ -133,5 +132,25 @@ describe('Zap', () => {
 
 		await zap.connect(user1).zapIn(pair3Ada.address, minSwapAmount, coin3.address, inputAmount);
 		expect(await pair3Ada.balanceOf(user1.address)).to.be.gt(utils.parseEther("0.002")); // receive some liquidity tokens
+	});
+
+	it('should fail to zap with too high slippage', async () => {
+		const inputAmount = utils.parseEther("0.01");
+		const minSwapAmount = utils.parseEther("0.00999"); // half the input, times two for pool price, minus too small slippage
+		await coin1.mint(user1.address, inputAmount);
+		await coin1.connect(user1).approve(zap.address, inputAmount);
+
+		await expect(zap.connect(user1).zapIn(pair12.address, minSwapAmount, coin1.address, inputAmount))
+			.to.be.revertedWith("VM Exception while processing transaction: reverted with reason string 'DEXRouter: INSUFFICIENT_OUTPUT_AMOUNT'");
+	});
+
+	it('should fail to zap with wrong input token', async () => {
+		const inputAmount = utils.parseEther("0.01");
+		const minSwapAmount = utils.parseEther("0.009"); // half the input, times two for pool price, minus too small slippage
+		await coin3.mint(user1.address, inputAmount);
+		await coin3.connect(user1).approve(zap.address, inputAmount);
+
+		await expect(zap.connect(user1).zapIn(pair12.address, minSwapAmount, coin3.address, inputAmount))
+			.to.be.revertedWith("VM Exception while processing transaction: reverted with reason string 'Zap: Input token not present in liquidity pair'");
 	});
 });

@@ -120,7 +120,7 @@ describe('Zap', () => {
 		const inputAmount = utils.parseEther("0.1");
 		const minSwapAmount = utils.parseEther("0.13"); // half the input, three times for pool price, minus some slippage
 
-		await zap.connect(user1).zapInETH(pair3Ada.address, minSwapAmount, {value: inputAmount});
+		await zap.connect(user1).zapInADA(pair3Ada.address, minSwapAmount, {value: inputAmount});
 		expect(await pair3Ada.balanceOf(user1.address)).to.be.gt(utils.parseEther("0.08")); // receive some liquidity tokens
 	});
 

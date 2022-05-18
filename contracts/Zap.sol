@@ -21,7 +21,7 @@ import './interfaces/IPair.sol';
 import './interfaces/IRouter02.sol';
 import './libraries/Math.sol';
 
-interface IWETH is IERC20 {
+interface IWADA is IERC20 {
     function deposit() external payable;
     function withdraw(uint256 wad) external;
 }
@@ -31,30 +31,30 @@ contract ZapOccamX {
     using SafeERC20 for IERC20;
 
     IRouter02 public immutable router;
-    address public immutable WETH;
+    address public immutable WADA;
     uint256 public constant minimumAmount = 1000;
 
-    constructor(address _router, address _WETH) public {
-        // Safety checks to ensure WETH token address
-        IWETH(_WETH).deposit{value: 0}();
-        IWETH(_WETH).withdraw(0);
+    constructor(address _router, address _WADA) public {
+        // Safety checks to ensure WADA token address
+        IWADA(_WADA).deposit{value: 0}();
+        IWADA(_WADA).withdraw(0);
 
         router = IRouter02(_router);
-        WETH = _WETH;
+        WADA = _WADA;
     }
 
     receive() external payable {
-        assert(msg.sender == WETH);
+        assert(msg.sender == WADA);
     }
 
     /** TODO
      */
-    function zapInETH (address pairAddr, uint256 tokenAmountOutMin) external payable {
+    function zapInADA (address pairAddr, uint256 tokenAmountOutMin) external payable {
         require(msg.value >= minimumAmount, 'Zap: Insignificant input amount');
 
-        IWETH(WETH).deposit{value: msg.value}();
+        IWADA(WADA).deposit{value: msg.value}();
 
-        _swapAndAddLiquidity(pairAddr, tokenAmountOutMin, WETH);
+        _swapAndAddLiquidity(pairAddr, tokenAmountOutMin, WADA);
     }
 
     /** TODO
@@ -109,8 +109,8 @@ contract ZapOccamX {
         for (uint256 i; i < tokens.length; i++) {
             balance = IERC20(tokens[i]).balanceOf(address(this));
             if (balance > 0) {
-                if (tokens[i] == WETH) {
-                    IWETH(WETH).withdraw(balance);
+                if (tokens[i] == WADA) {
+                    IWADA(WADA).withdraw(balance);
                     (bool success,) = msg.sender.call{value: balance}(new bytes(0));
                     require(success, 'Zap: ETH transfer failed');
                 } else {

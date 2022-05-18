@@ -45,7 +45,7 @@ async function main() {
     // console.log("Verification result:", verification);
     
     console.log("Testing zap on pair ", testPairAddress);
-    let tx = await zap.zapInETH(testPairAddress, 0, {value: testAdaAmount});
+    let tx = await zap.zapInADA(testPairAddress, 0, {value: testAdaAmount});
     // TODO: check result
 
 }

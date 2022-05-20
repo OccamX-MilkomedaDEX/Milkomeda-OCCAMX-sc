@@ -1,6 +1,7 @@
 const hre = require("hardhat");
 const {utils} = require("ethers");
 const { sleep, getInputData } = require("./helpers");
+const { ethers } = require("hardhat");
 
 /**
  * Deployment script for the zap contract
@@ -8,6 +9,7 @@ const { sleep, getInputData } = require("./helpers");
  * and then runs a simple test to verify that it works.
  */
 async function main() {
+    
     // PARAMS Start
     let routerAddress, wAdaAddress, testPairAddress, testAdaAmount;
     if (hre.network.name == "milkomedaMainnet") {
@@ -31,23 +33,20 @@ async function main() {
     console.log("Deploying contracts with the account:", deployer.address);
     console.log("Account balance:", (await deployer.getBalance()).toString());
 
+    let pair = await ethers.getContractAt("Pair", testPairAddress);
+
     const zapFactory = await hre.ethers.getContractFactory('ZapOccamX', deployer);
     let zap = await zapFactory.deploy(routerAddress, wAdaAddress);
     console.log("Zap address:", zap.address);
-    
-    console.log("Waiting 30s before verifying constructor parameters");
-    await sleep(30);
-    // console.log("Verifying constructor parameters");
-    // let verification = await hre.run("verify:verify", {
-    //     address: zap.address,
-    //     constructorArguments: [routerAddress, wAdaAddress],
-    // })
-    // console.log("Verification result:", verification);
-    
+        
     console.log("Testing zap on pair ", testPairAddress);
-    let tx = await zap.zapInADA(testPairAddress, 0, {value: testAdaAmount});
-    // TODO: check result
+    console.log(`Holding ${await pair.balanceOf(deployer.address)} liquidity tokens before zap`);
 
+    let tx = await zap.zapInADA(testPairAddress, 0, {value: testAdaAmount});
+
+    console.log("waiting for 5 confirmations");
+    await tx.wait(5);
+    console.log(`Holding ${await pair.balanceOf(deployer.address)} liquidity tokens after zap`);
 }
 
 main()

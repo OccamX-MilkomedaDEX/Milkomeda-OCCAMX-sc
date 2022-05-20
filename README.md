@@ -22,3 +22,9 @@ Make sure you have the environment variables setup as required by the `hardhat.c
 ```
 npx hardhat run scripts/deployZap.js --network milkomeda<Main|Test>net
 ```
+To verify the code on https://explorer-mainnet-cardano-evm.c1.milkomeda.com you use the flattened version created with
+```
+npx hardhat flatten contracts/ZapOccamX.sol > flattened/ZapOccamXFlat.sol
+```
+Before pasting it to the form, check the file and ensure that there is only one `SPDX-License-Identifier` specified.
+

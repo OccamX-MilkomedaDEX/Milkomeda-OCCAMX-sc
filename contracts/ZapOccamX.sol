@@ -93,6 +93,8 @@ contract ZapOccamX {
         uint256[] memory swapedAmounts = router
             .swapExactTokensForTokens(swapAmountIn, tokenAmountOutMin, path, address(this), block.timestamp);
 
+        // TODO: double check returned tokens because this is an external contract call? Maybe not needed because the router is under our control.
+
         _approveTokenIfNeeded(path[1], address(router));
         (,, uint256 amountLiquidity) = router
             .addLiquidity(path[0], path[1], fullInvestment.sub(swapedAmounts[0]), swapedAmounts[1], 1, 1, address(this), block.timestamp);
@@ -120,6 +122,12 @@ contract ZapOccamX {
         }
     }
 
+    /**
+     * How much of A to swap to B to get the most liquidity tokens from the pair
+     * @param investmentA total amount of token A given as zap input
+     * @param reserveA Amount of A tokens in the pair liquidity before the swap
+     * @param reserveB Amount of B tokens in the pair liquidity before the swap
+     */
     function _getSwapAmount(uint256 investmentA, uint256 reserveA, uint256 reserveB) private view returns (uint256 swapAmount) {
         uint256 halfInvestment = investmentA / 2;
         uint256 nominator = router.getAmountOut(halfInvestment, reserveA, reserveB);

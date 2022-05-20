@@ -10,9 +10,6 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Affero General Public License for more details.
 
-// @author Zwilling for OccamX, forked from Wivern for Beefy.Finance (https://github.com/beefyfinance/beefy-contracts/blob/b4f0ab0394b9316e40596b2d8066ee94398449dd/contracts/BIFI/zaps/BeefyZapUniswapV2.txt)
-// @notice This contract adds liquidity to Uniswap V2 compatible liquidity pair pools and stake.
-
 pragma solidity 0.6.12; // chose this version to be compatible with the imported interfaces
 
 import '@openzeppelin/contracts/token/ERC20/SafeERC20.sol';
@@ -26,6 +23,11 @@ interface IWADA is IERC20 {
     function withdraw(uint256 wad) external;
 }
 
+
+/**
+ * @title Contract for adding liquidity to Uniswap V2 compatible liquidity pairs by providing just one token as input
+ * @author Zwilling for OccamX, forked from Wivern for Beefy.Finance (https://github.com/beefyfinance/beefy-contracts/blob/b4f0ab0394b9316e40596b2d8066ee94398449dd/contracts/BIFI/zaps/BeefyZapUniswapV2.txt)
+ */
 contract ZapOccamX {
     using SafeMath for uint256;
     using SafeERC20 for IERC20;
@@ -47,7 +49,10 @@ contract ZapOccamX {
         assert(msg.sender == WADA);
     }
 
-    /** TODO
+    /** 
+     * @notice Zap into pair providing ADA as input
+     * @param pairAddr Address of the UniswapV2 like pair to add liquidity to
+     * @param tokenAmountOutMin Minimum amount of token to receive in the swap before adding liquidity (basically your slippage tolerance)
      */
     function zapInADA (address pairAddr, uint256 tokenAmountOutMin) external payable {
         require(msg.value >= minimumAmount, 'Zap: Insignificant input amount');
@@ -57,7 +62,12 @@ contract ZapOccamX {
         _swapAndAddLiquidity(pairAddr, tokenAmountOutMin, WADA);
     }
 
-    /** TODO
+    /** 
+     * @notice Zap into pair providing an ERC20 token as input. ERC20 token withdrawal needs to be approved first.
+     * @param pairAddr Address of the UniswapV2 like pair to add liquidity to
+     * @param tokenAmountOutMin Minimum amount of token to receive in the swap before adding liquidity (basically your slippage tolerance)
+     * @param tokenIn Which token of the pair to provide as input
+     * @param tokenInAmount How much of tokenIn to invest into pair liquidity
      */
     function zapIn (address pairAddr, uint256 tokenAmountOutMin, address tokenIn, uint256 tokenInAmount) external {
         require(tokenInAmount >= minimumAmount, 'Zap: Insignificant input amount');
@@ -68,6 +78,13 @@ contract ZapOccamX {
         _swapAndAddLiquidity(pairAddr, tokenAmountOutMin, tokenIn);
     }
 
+
+    /** 
+     * @dev Implements zap by swapping into secondary token and adding the liquidity to the pair
+     * @param pairAddr Address of the UniswapV2 like pair to add liquidity to
+     * @param tokenAmountOutMin Minimum amount of token to receive in the swap before adding liquidity (basically your slippage tolerance)
+     * @param tokenIn Which token of the pair to provide as input
+     */
     function _swapAndAddLiquidity(address pairAddr, uint256 tokenAmountOutMin, address tokenIn) private {
         IPair pair = IPair(pairAddr);
 
@@ -106,6 +123,11 @@ contract ZapOccamX {
         // TODO: add possibility to stake for liquidity mining
     }
 
+
+    /** 
+     * @dev Sending contract token balances back to the sender
+     * @param tokens List of tokens to be sent back
+     */
     function _returnAssets(address[] memory tokens) private {
         uint256 balance;
         for (uint256 i; i < tokens.length; i++) {
@@ -123,7 +145,7 @@ contract ZapOccamX {
     }
 
     /**
-     * How much of A to swap to B to get the most liquidity tokens from the pair
+     * @dev How much of A to swap to B to get the most liquidity tokens from the pair
      * @param investmentA total amount of token A given as zap input
      * @param reserveA Amount of A tokens in the pair liquidity before the swap
      * @param reserveB Amount of B tokens in the pair liquidity before the swap
@@ -135,6 +157,15 @@ contract ZapOccamX {
         swapAmount = investmentA.sub(Babylonian.sqrt(halfInvestment * halfInvestment * nominator / denominator));
     }
 
+    /** 
+     * @notice Estimates how the investment is split in the swap to yield the maximum amount of liquidity tokens
+     * @param pairAddr Address of the UniswapV2 like pair to add liquidity to
+     * @param tokenIn Which token of the pair to provide as input
+     * @param fullInvestmentIn How much of tokenIn to invest into pair liquidity
+     * @return swapAmountIn Amount of input tokens to be swapped
+     * @return swapAmountOut Amount of secondary tokens to receive in the swap
+     * @return swapTokenOut Secondary token address
+     */
     function estimateSwap(address pairAddr, address tokenIn, uint256 fullInvestmentIn) public view returns(uint256 swapAmountIn, uint256 swapAmountOut, address swapTokenOut) {
         IPair pair = IPair(pairAddr);
 
@@ -149,6 +180,11 @@ contract ZapOccamX {
         swapTokenOut = isInputA ? pair.token1() : pair.token0();
     }
 
+    /**
+     * @dev Helper to approve ERC20 token spending if needed
+     * @param token The token to approve spending of
+     * @param spender Address to permit spending by
+     */ 
     function _approveTokenIfNeeded(address token, address spender) private {
         if (IERC20(token).allowance(address(this), spender) == 0) {
             IERC20(token).safeApprove(spender, type(uint256).max);

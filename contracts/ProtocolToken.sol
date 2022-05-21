@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.7.0;
+pragma solidity ^0.6.0;
 
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20Capped.sol";
@@ -9,7 +9,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 contract ProtocolToken is ERC20Capped, ERC20Burnable, Ownable {
     using SafeMath for uint;
 
-    constructor(uint totalSupply, address assetManager, string memory name, string memory symbol) ERC20(name, symbol) ERC20Capped(totalSupply) {
+    constructor(uint totalSupply, address assetManager, string memory name, string memory symbol) public ERC20(name, symbol) ERC20Capped(totalSupply) {
         _mint(assetManager, totalSupply);
     }
 

@@ -57,6 +57,7 @@ async function main() {
             //     console.log(`waiting for the second set schedule transaction to be finished.`);
             //     await sleep(10);
             // }
+            console.log(`check block explorer: https://explorer-mainnet-cardano-evm.c1.milkomeda.com/address/${stakingAddress}/read-proxy`)
             console.log(`------------------------`)
         }
     }

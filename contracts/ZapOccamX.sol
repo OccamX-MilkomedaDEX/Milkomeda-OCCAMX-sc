@@ -101,9 +101,9 @@ contract ZapOccamX {
         uint256 fullInvestment = IERC20(tokenIn).balanceOf(address(this));
         uint256 swapAmountIn;
         if (isInputA) {
-            swapAmountIn = _getSwapAmount(fullInvestment, reserveA, reserveB);
+            swapAmountIn = _getSwapAmount(fullInvestment, reserveA);
         } else {
-            swapAmountIn = _getSwapAmount(fullInvestment, reserveB, reserveA);
+            swapAmountIn = _getSwapAmount(fullInvestment, reserveB);
         }
 
         _approveTokenIfNeeded(path[0], address(router));
@@ -145,16 +145,20 @@ contract ZapOccamX {
     }
 
     /**
-     * @dev How much of A to swap to B to get the most liquidity tokens from the pair
+     * @dev More exact calculation of how much of A to swap to B to get the most liquidity tokens from the pair
      * @param investmentA total amount of token A given as zap input
      * @param reserveA Amount of A tokens in the pair liquidity before the swap
-     * @param reserveB Amount of B tokens in the pair liquidity before the swap
      */
-    function _getSwapAmount(uint256 investmentA, uint256 reserveA, uint256 reserveB) private view returns (uint256 swapAmount) {
-        uint256 halfInvestment = investmentA / 2;
-        uint256 nominator = router.getAmountOut(halfInvestment, reserveA, reserveB);
-        uint256 denominator = router.quote(halfInvestment, reserveA.add(halfInvestment), reserveB.sub(nominator));
-        swapAmount = investmentA.sub(Babylonian.sqrt(halfInvestment * halfInvestment * nominator / denominator));
+    function _getSwapAmount(uint256 investmentA, uint256 reserveA) private view returns (uint256 swapAmount) {
+        uint256 rTerm = reserveA.mul(1997).div(1000);
+        uint256 rTermSqt = rTerm.mul(rTerm);
+        uint256 additionInSqrt = reserveA.mul(investmentA).mul(4*997).div(1000);
+        swapAmount = Babylonian.sqrt(
+            rTermSqt.add(additionInSqrt                
+            )
+        ).sub(
+            rTerm
+        ).div(2*997).mul(1000);
     }
 
     /** 
@@ -175,7 +179,7 @@ contract ZapOccamX {
         (uint256 reserveA, uint256 reserveB,) = pair.getReserves();
         (reserveA, reserveB) = isInputA ? (reserveA, reserveB) : (reserveB, reserveA);
 
-        swapAmountIn = _getSwapAmount(fullInvestmentIn, reserveA, reserveB);
+        swapAmountIn = _getSwapAmount(fullInvestmentIn, reserveA);
         swapAmountOut = router.getAmountOut(swapAmountIn, reserveA, reserveB);
         swapTokenOut = isInputA ? pair.token1() : pair.token0();
     }

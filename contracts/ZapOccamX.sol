@@ -110,11 +110,18 @@ contract ZapOccamX {
         uint256[] memory swapedAmounts = router
             .swapExactTokensForTokens(swapAmountIn, tokenAmountOutMin, path, address(this), block.timestamp);
 
-        // TODO: double check returned tokens because this is an external contract call? Maybe not needed because the router is under our control.
+        // double check returned tokens because this is an external contract call
+        // (Maybe not needed because the router is under our control, but someone could potentially sneak in a different pool)
+        require(IERC20(tokenIn).balanceOf(address(this)) >= fullInvestment.sub(swapAmountIn), "unexpected input amount after swapping");
+        require(IERC20(path[1]).balanceOf(address(this)) >= tokenAmountOutMin, "amount of swapped tokens to low");
 
         _approveTokenIfNeeded(path[1], address(router));
         (,, uint256 amountLiquidity) = router
             .addLiquidity(path[0], path[1], fullInvestment.sub(swapedAmounts[0]), swapedAmounts[1], 1, 1, address(this), block.timestamp);
+        
+        // double check returned liquidity tokens because this is an external contract call
+        // (Maybe not needed because the router is under our control, but someone could potentially sneak in a different pool)
+        require(pair.balanceOf(address(this)) >= amountLiquidity && amountLiquidity > 0, "unexpected amount of liquidity tokens returned");
 
         address[] memory tokensToReturn = new address[](3);
         tokensToReturn[0] = pairAddr;

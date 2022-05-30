@@ -116,8 +116,10 @@ contract ZapOccamX {
         (,, uint256 amountLiquidity) = router
             .addLiquidity(path[0], path[1], fullInvestment.sub(swapedAmounts[0]), swapedAmounts[1], 1, 1, address(this), block.timestamp);
 
-        address[] memory tokensToReturn = new address[](1);
+        address[] memory tokensToReturn = new address[](3);
         tokensToReturn[0] = pairAddr;
+        tokensToReturn[1] = tokenIn;
+        tokensToReturn[2] = path[0];
         _returnAssets(tokensToReturn);
 
         // TODO: add possibility to stake for liquidity mining

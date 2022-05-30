@@ -92,6 +92,14 @@ describe('Zap', () => {
 		zap = (await zapFactory.deploy(router.address, wADA.address)) as ZapOccamX;
 	});
 
+	afterEach(async () => {
+		// check that that there are no funds left in the contract after zapping
+		for (let token of [coin1, coin2, coin3, pair12, pair3Ada]){
+			expect(await token.balanceOf(zap.address)).to.eq(0);
+		}
+		expect(await ethers.provider.getBalance(zap.address)).to.eq(0);
+	});
+
 	it('should construct the zap contract', async () => {
 		expect(zap.address).to.properAddress;
 	});

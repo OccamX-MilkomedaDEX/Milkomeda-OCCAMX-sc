@@ -154,11 +154,11 @@ contract ZapOccamX {
     }
 
     /**
-     * @dev More exact calculation of how much of A to swap to B to get the most liquidity tokens from the pair
+     * @dev More exact calculation of how much of A to swap to B to get the most liquidity tokens from the pair. The derivation of the formula can be found in docs/zap_swap_amout_formula.md
      * @param investmentA total amount of token A given as zap input
      * @param reserveA Amount of A tokens in the pair liquidity before the swap
      */
-    function _getSwapAmount(uint256 investmentA, uint256 reserveA) private view returns (uint256 swapAmount) {
+    function _getSwapAmount(uint256 investmentA, uint256 reserveA) private pure returns (uint256 swapAmount) {
         uint256 rTerm = reserveA.mul(1997).div(1000);
         uint256 rTermSqt = rTerm.mul(rTerm);
         uint256 additionInSqrt = reserveA.mul(investmentA).mul(4*997).div(1000);

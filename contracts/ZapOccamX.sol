@@ -53,13 +53,21 @@ contract ZapOccamX {
      * @notice Zap into pair providing ADA as input
      * @param pairAddr Address of the UniswapV2 like pair to add liquidity to
      * @param tokenAmountOutMin Minimum amount of token to receive in the swap before adding liquidity (basically your slippage tolerance)
+     * @param pairAddr Address of the liquidity mining contract to stake to (zero address if you do not want to stake your liquidity)
      */
-    function zapInADA (address pairAddr, uint256 tokenAmountOutMin) external payable {
+    function zapInADA (
+        address pairAddr,
+        uint256 tokenAmountOutMin,
+        address liquidityMiningAddr
+    ) 
+        external payable 
+    {
         require(msg.value >= minimumAmount, 'Zap: Insignificant input amount');
 
         IWADA(WADA).deposit{value: msg.value}();
 
         _swapAndAddLiquidity(pairAddr, tokenAmountOutMin, WADA);
+        // TODO update confluence docs
     }
 
     /** 
@@ -68,8 +76,17 @@ contract ZapOccamX {
      * @param tokenAmountOutMin Minimum amount of token to receive in the swap before adding liquidity (basically your slippage tolerance)
      * @param tokenIn Which token of the pair to provide as input
      * @param tokenInAmount How much of tokenIn to invest into pair liquidity
+     * @param pairAddr Address of the liquidity mining contract to stake to (zero address if you do not want to stake your liquidity)
      */
-    function zapIn (address pairAddr, uint256 tokenAmountOutMin, address tokenIn, uint256 tokenInAmount) external {
+    function zapIn (
+        address pairAddr,
+        uint256 tokenAmountOutMin,
+        address tokenIn,
+        uint256 tokenInAmount,
+        address liquidityMiningAddr
+    ) 
+        external
+    {
         require(tokenInAmount >= minimumAmount, 'Zap: Insignificant input amount');
         require(IERC20(tokenIn).allowance(msg.sender, address(this)) >= tokenInAmount, 'Zap: Input token is not approved');
 

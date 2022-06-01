@@ -10,6 +10,7 @@ import { Factory } from '../typechain/Factory';
 import { Pair } from '../typechain/Pair';
 import { Router02 } from '../typechain/Router02';
 import { MockCoin } from '../typechain/MockCoin';
+import { StakingImp } from '../typechain/StakingImp';
 
 import { deployMockContract } from '@ethereum-waffle/mock-contract';
 import { BigNumber, ContractTransaction, providers, utils } from 'ethers';
@@ -39,6 +40,8 @@ describe('Zap', () => {
 	let pair3Ada: Pair;
 	let router: Router02;
 	let wADA: WETH9;
+	let staking12: StakingImp;
+	let staking3Ada: StakingImp;
 
 	let deployer: SignerWithAddress;
 	let user1: SignerWithAddress;
@@ -87,6 +90,12 @@ describe('Zap', () => {
 		await coin3.connect(deployer).approve(router.address, liquidity3);
 		await router.connect(deployer).addLiquidityADA(coin3.address, liquidity3, 0, 0, deployer.address, 1000000000000000, {value: liquidityWAda});
 
+		const stakingFactory = await hre.ethers.getContractFactory("StakingImp", deployer);
+		staking12 = await stakingFactory.deploy() as StakingImp;
+		staking12.initialize(wADA.address, pair12.address, 1, 0, 1, deployer.address, false, 0);
+		staking3Ada = await stakingFactory.deploy() as StakingImp;
+		staking3Ada.initialize(wADA.address, pair3Ada.address, 1, 0, 1, deployer.address, true, 400);
+
 		// SETUP the zap contract we want to test
 		const zapFactory = await hre.ethers.getContractFactory('ZapOccamX', deployer);
 		zap = (await zapFactory.deploy(router.address, wADA.address)) as ZapOccamX;
@@ -110,7 +119,7 @@ describe('Zap', () => {
 		await coin1.mint(user1.address, inputAmount);
 		await coin1.connect(user1).approve(zap.address, inputAmount);
 
-		await zap.connect(user1).zapIn(pair12.address, minSwapAmount, coin1.address, inputAmount);
+		await zap.connect(user1).zapIn(pair12.address, minSwapAmount, coin1.address, inputAmount, ethers.constants.AddressZero);
 		expect(await pair12.balanceOf(user1.address)).to.be.gt(utils.parseEther("0.007")); // receive some liquidity tokens
 	});
 
@@ -120,7 +129,7 @@ describe('Zap', () => {
 		await coin2.mint(user1.address, inputAmount);
 		await coin2.connect(user1).approve(zap.address, inputAmount);
 
-		await zap.connect(user1).zapIn(pair12.address, minSwapAmount, coin2.address, inputAmount);
+		await zap.connect(user1).zapIn(pair12.address, minSwapAmount, coin2.address, inputAmount, ethers.constants.AddressZero);
 		expect(await pair12.balanceOf(user1.address)).to.be.gt(utils.parseEther("0.003")); // receive some liquidity tokens
 	});
 
@@ -128,7 +137,7 @@ describe('Zap', () => {
 		const inputAmount = utils.parseEther("0.1");
 		const minSwapAmount = utils.parseEther("0.13"); // half the input, three times for pool price, minus some slippage
 
-		await zap.connect(user1).zapInADA(pair3Ada.address, minSwapAmount, {value: inputAmount});
+		await zap.connect(user1).zapInADA(pair3Ada.address, minSwapAmount, ethers.constants.AddressZero, {value: inputAmount});
 		expect(await pair3Ada.balanceOf(user1.address)).to.be.gt(utils.parseEther("0.08")); // receive some liquidity tokens
 	});
 
@@ -138,7 +147,7 @@ describe('Zap', () => {
 		await coin3.mint(user1.address, inputAmount);
 		await coin3.connect(user1).approve(zap.address, inputAmount);
 
-		await zap.connect(user1).zapIn(pair3Ada.address, minSwapAmount, coin3.address, inputAmount);
+		await zap.connect(user1).zapIn(pair3Ada.address, minSwapAmount, coin3.address, inputAmount, ethers.constants.AddressZero);
 		expect(await pair3Ada.balanceOf(user1.address)).to.be.gt(utils.parseEther("0.002")); // receive some liquidity tokens
 	});
 
@@ -148,7 +157,7 @@ describe('Zap', () => {
 		await coin1.mint(user1.address, inputAmount);
 		await coin1.connect(user1).approve(zap.address, inputAmount);
 
-		await expect(zap.connect(user1).zapIn(pair12.address, minSwapAmount, coin1.address, inputAmount))
+		await expect(zap.connect(user1).zapIn(pair12.address, minSwapAmount, coin1.address, inputAmount, ethers.constants.AddressZero))
 			.to.be.revertedWith("VM Exception while processing transaction: reverted with reason string 'DEXRouter: INSUFFICIENT_OUTPUT_AMOUNT'");
 	});
 
@@ -158,7 +167,46 @@ describe('Zap', () => {
 		await coin3.mint(user1.address, inputAmount);
 		await coin3.connect(user1).approve(zap.address, inputAmount);
 
-		await expect(zap.connect(user1).zapIn(pair12.address, minSwapAmount, coin3.address, inputAmount))
+		await expect(zap.connect(user1).zapIn(pair12.address, minSwapAmount, coin3.address, inputAmount, ethers.constants.AddressZero))
 			.to.be.revertedWith("VM Exception while processing transaction: reverted with reason string 'Zap: Input token not present in liquidity pair'");
+	});
+
+	it('should zap into token-token pair and stake liquidity', async () => {
+		const inputAmount = utils.parseEther("0.01");
+		const minSwapAmount = utils.parseEther("0.009"); // half the input, times two for pool price, minus some slippage
+		await coin1.mint(user1.address, inputAmount);
+		await coin1.connect(user1).approve(zap.address, inputAmount);
+
+		await zap.connect(user1).zapIn(pair12.address, minSwapAmount, coin1.address, inputAmount, staking12.address);
+		expect(await staking12.stakes(user1.address)).to.be.gt(utils.parseEther("0.007"));
+	});
+
+	it('should zap into wADA-token pair with ADA and stake liquidity', async () => {
+		const inputAmount = utils.parseEther("0.1");
+		const minSwapAmount = utils.parseEther("0.13"); // half the input, three times for pool price, minus some slippage
+
+		await zap.connect(user1).zapInADA(pair3Ada.address, minSwapAmount, staking3Ada.address, {value: inputAmount});
+		expect(await staking3Ada.stakes(user1.address)).to.be.gt(utils.parseEther("0.08"));
+	});
+
+	it('should fail staking into non staking contract', async () => {
+		const inputAmount = utils.parseEther("0.01");
+		const minSwapAmount = utils.parseEther("0.001");
+		await coin1.mint(user1.address, inputAmount);
+		await coin1.connect(user1).approve(zap.address, inputAmount);
+
+		// router is not a staking contract
+		await expect(zap.connect(user1).zapIn(pair12.address, minSwapAmount, coin1.address, inputAmount, router.address))
+			.to.be.revertedWith("VM Exception while processing transaction: reverted with reason string 'Zap: staking contract invalid'");
+	});
+
+	it('should fail staking into staking contract for different token', async () => {
+		const inputAmount = utils.parseEther("0.01");
+		const minSwapAmount = utils.parseEther("0.001");
+		await coin1.mint(user1.address, inputAmount);
+		await coin1.connect(user1).approve(zap.address, inputAmount);
+
+		await expect(zap.connect(user1).zapIn(pair12.address, minSwapAmount, coin1.address, inputAmount, staking3Ada.address))
+			.to.be.revertedWith("VM Exception while processing transaction: reverted with reason string 'Zap: staking contract for wrong token'");
 	});
 });

@@ -17,13 +17,8 @@ import '@uniswap/lib/contracts/libraries/Babylonian.sol';
 import './interfaces/IPair.sol';
 import './interfaces/IRouter02.sol';
 import './interfaces/IStaking.sol';
+import './interfaces/IWADA.sol';
 import './libraries/Math.sol';
-
-
-interface IWADA is IERC20 {
-    function deposit() external payable;
-    function withdraw(uint256 wad) external;
-}
 
 
 /**

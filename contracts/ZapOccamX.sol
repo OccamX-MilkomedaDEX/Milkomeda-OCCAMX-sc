@@ -16,8 +16,8 @@ import '@openzeppelin/contracts/token/ERC20/SafeERC20.sol';
 import '@uniswap/lib/contracts/libraries/Babylonian.sol';
 import './interfaces/IPair.sol';
 import './interfaces/IRouter02.sol';
-// import './libraries/Math.sol'; commented out as long as stakingImp also imports it
-import './StakingImp.sol'; // TODO: it would probably be cleaner to create an interface for it
+import './interfaces/IStaking.sol';
+import './libraries/Math.sol';
 
 
 interface IWADA is IERC20 {
@@ -160,7 +160,7 @@ contract ZapOccamX {
             _returnAssets(tokensToReturn);
         } else {
             // stake for liquidity mining
-            StakingImp stake = StakingImp(stakingAddr);
+            IStaking stake = IStaking(stakingAddr);
             require(address(stake.stakingToken()) == pairAddr, "Zap: staking contract for wrong token");
             uint256 previousStake = stake.stakes(msg.sender);
             IPair pair = IPair(pairAddr);

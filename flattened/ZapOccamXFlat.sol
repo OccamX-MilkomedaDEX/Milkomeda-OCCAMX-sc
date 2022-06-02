@@ -83,6 +83,8 @@ interface IERC20 {
 
 // File @openzeppelin/contracts/math/SafeMath.sol@v3.4.2
 
+// SPDX-License-Identifier: MIT
+
 pragma solidity >=0.6.0 <0.8.0;
 
 /**
@@ -299,6 +301,8 @@ library SafeMath {
 
 // File @openzeppelin/contracts/utils/Address.sol@v3.4.2
 
+// SPDX-License-Identifier: MIT
+
 pragma solidity >=0.6.2 <0.8.0;
 
 /**
@@ -489,6 +493,8 @@ library Address {
 
 
 // File @openzeppelin/contracts/token/ERC20/SafeERC20.sol@v3.4.2
+
+// SPDX-License-Identifier: MIT
 
 pragma solidity >=0.6.0 <0.8.0;
 
@@ -787,6 +793,87 @@ interface IRouter02 is IRouter01 {
 }
 
 
+// File contracts/interfaces/IERC20Burnable.sol
+
+pragma solidity >=0.6.0;
+
+interface IERC20Burnable {
+    event Approval(address indexed owner, address indexed spender, uint value);
+    event Transfer(address indexed from, address indexed to, uint value);
+
+    function name() external view returns (string memory);
+    function symbol() external view returns (string memory);
+    function decimals() external view returns (uint8);
+    function totalSupply() external view returns (uint);
+    function balanceOf(address owner) external view returns (uint);
+    function allowance(address owner, address spender) external view returns (uint);
+
+
+
+    function approve(address spender, uint value) external returns (bool);
+    function transfer(address to, uint value) external returns (bool);
+    function transferFrom(address from, address to, uint value) external returns (bool);
+    function burn(uint256 amount) external;
+
+    function safeTransfer(address to, uint value) external returns (bool);
+    function safeTransferFrom(address from, address to, uint value) external returns (bool);
+
+}
+
+
+// File contracts/interfaces/IStaking.sol
+
+pragma solidity ^0.6.0;
+
+
+interface IStaking {
+    event Staked(address indexed user, uint256 amount);
+    event Unstaked(address indexed user, uint256 amount);
+    event RewardPaid(address indexed user, uint256 reward);
+    event FeeBurned(uint256 amount);
+    event FeeCollected(uint256 amount);
+
+    // public variables and mappings
+    function rewardsToken() external view returns(IERC20); 
+    function stakingToken() external view returns(IERC20Burnable);
+    function checkPoints(uint) external view returns(uint256); 
+    function rewardPerSecond(uint) external view returns(uint256); 
+    function lastUpdateTime() external view returns(uint256);
+    function rewardPerTokenStored() external view returns(uint256);
+    function startingCheckPoint() external view returns(uint); 
+    function unstakingFeeRatio() external pure returns(uint);
+    function newUnstakingFeeRatio() external view returns(uint);
+    function unstakingFeeRatioTimelock() external view returns(uint);
+    function unstakingFeeRatioTimelockPeriod() external pure returns(uint);
+    function unstakingFeeDenominator() external pure returns(uint);
+    function totalStake() external view returns(uint256);
+    function feeBurn() external view returns(bool);
+    function initialized() external view returns(bool);
+    function userRewardPerTokenPaid(address) external view returns(uint256);
+    function rewards(address) external view returns(uint256);
+    function stakes(address) external view returns(uint256);
+
+    // public functions
+    function initialize(address _rewardsToken, address _stakingToken, uint emissionStart, uint firstCheckPoint, uint _rewardPerSecond, address admin, bool _feeBurn,uint _unstakingFeeRatio) external;
+    function updateSchedule(uint checkPoint, uint _rewardPerSecond) external;
+    function getCheckPoints() external view returns (uint256[] memory);
+    function getRewardPerSecond() external view returns (uint256[] memory);
+    function lastTimeRewardApplicable() external view returns (uint256);
+    function getTotalEmittedTokens(uint256 _from, uint256 _to, uint256 _startingCheckPoint) external view returns (uint256, uint256);
+    function setFeeBurn(bool _feeBurn) external;
+    function stake(uint256 amount) external;
+    function unstake(uint256 amount, uint maximumFee) external;
+    function transferStake(address _recipient, uint _amount) external;
+    function getRewardThenStake() external;
+    function withdrawFee(uint256 amount) external;
+    function getReward() external;
+    function exit() external;
+    function setNewUnstakingFeeRatio(uint _newUnstakingFeeRatio) external;
+    function changeUnstakingFeeRatio() external;
+    function showPendingReward(address account) external view returns (uint256);
+}
+
+
 // File contracts/libraries/Math.sol
 
 pragma solidity ^0.6.0;
@@ -815,7 +902,7 @@ library Math {
 
 // File contracts/ZapOccamX.sol
 
-// License for this file: GPLv2 (not in SPDX standard because the milkomeda explorer does not allow different licences in the same flattened file)
+// SPDX-License-Identifier: GPLv2
 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -828,6 +915,7 @@ library Math {
 // GNU Affero General Public License for more details.
 
 pragma solidity 0.6.12; // chose this version to be compatible with the imported interfaces
+
 
 
 
@@ -868,13 +956,21 @@ contract ZapOccamX {
      * @notice Zap into pair providing ADA as input
      * @param pairAddr Address of the UniswapV2 like pair to add liquidity to
      * @param tokenAmountOutMin Minimum amount of token to receive in the swap before adding liquidity (basically your slippage tolerance)
+     * @param stakingAddr Address of the liquidity mining contract to stake to (zero address if you do not want to stake your liquidity)
      */
-    function zapInADA (address pairAddr, uint256 tokenAmountOutMin) external payable {
+    function zapInADA (
+        address pairAddr,
+        uint256 tokenAmountOutMin,
+        address stakingAddr
+    ) 
+        external payable 
+    {
         require(msg.value >= minimumAmount, 'Zap: Insignificant input amount');
 
         IWADA(WADA).deposit{value: msg.value}();
 
         _swapAndAddLiquidity(pairAddr, tokenAmountOutMin, WADA);
+        _stakeOrReturnLiquidity(pairAddr, stakingAddr);
     }
 
     /** 
@@ -883,16 +979,25 @@ contract ZapOccamX {
      * @param tokenAmountOutMin Minimum amount of token to receive in the swap before adding liquidity (basically your slippage tolerance)
      * @param tokenIn Which token of the pair to provide as input
      * @param tokenInAmount How much of tokenIn to invest into pair liquidity
+     * @param stakingAddr Address of the liquidity mining contract to stake to (zero address if you do not want to stake your liquidity)
      */
-    function zapIn (address pairAddr, uint256 tokenAmountOutMin, address tokenIn, uint256 tokenInAmount) external {
+    function zapIn (
+        address pairAddr,
+        uint256 tokenAmountOutMin,
+        address tokenIn,
+        uint256 tokenInAmount,
+        address stakingAddr
+    ) 
+        external
+    {
         require(tokenInAmount >= minimumAmount, 'Zap: Insignificant input amount');
         require(IERC20(tokenIn).allowance(msg.sender, address(this)) >= tokenInAmount, 'Zap: Input token is not approved');
 
         IERC20(tokenIn).safeTransferFrom(msg.sender, address(this), tokenInAmount);
 
         _swapAndAddLiquidity(pairAddr, tokenAmountOutMin, tokenIn);
+        _stakeOrReturnLiquidity(pairAddr, stakingAddr);
     }
-
 
     /** 
      * @dev Implements zap by swapping into secondary token and adding the liquidity to the pair
@@ -916,26 +1021,58 @@ contract ZapOccamX {
         uint256 fullInvestment = IERC20(tokenIn).balanceOf(address(this));
         uint256 swapAmountIn;
         if (isInputA) {
-            swapAmountIn = _getSwapAmount(fullInvestment, reserveA, reserveB);
+            swapAmountIn = _getSwapAmount(fullInvestment, reserveA);
         } else {
-            swapAmountIn = _getSwapAmount(fullInvestment, reserveB, reserveA);
+            swapAmountIn = _getSwapAmount(fullInvestment, reserveB);
         }
 
         _approveTokenIfNeeded(path[0], address(router));
         uint256[] memory swapedAmounts = router
             .swapExactTokensForTokens(swapAmountIn, tokenAmountOutMin, path, address(this), block.timestamp);
 
-        // TODO: double check returned tokens because this is an external contract call? Maybe not needed because the router is under our control.
+        // double check returned tokens because this is an external contract call
+        // (Maybe not needed because the router is under our control, but someone could potentially sneak in a different pool)
+        require(IERC20(tokenIn).balanceOf(address(this)) >= fullInvestment.sub(swapAmountIn), "unexpected input amount after swapping");
+        require(IERC20(path[1]).balanceOf(address(this)) >= tokenAmountOutMin, "amount of swapped tokens to low");
 
         _approveTokenIfNeeded(path[1], address(router));
         (,, uint256 amountLiquidity) = router
             .addLiquidity(path[0], path[1], fullInvestment.sub(swapedAmounts[0]), swapedAmounts[1], 1, 1, address(this), block.timestamp);
+        
+        // double check returned liquidity tokens because this is an external contract call
+        // (Maybe not needed because the router is under our control, but someone could potentially sneak in a different pool)
+        require(pair.balanceOf(address(this)) >= amountLiquidity && amountLiquidity > 0, "unexpected amount of liquidity tokens returned");
 
-        address[] memory tokensToReturn = new address[](1);
-        tokensToReturn[0] = pairAddr;
+        address[] memory tokensToReturn = new address[](2);
+        tokensToReturn[0] = tokenIn;
+        tokensToReturn[1] = path[0];
         _returnAssets(tokensToReturn);
+    }
 
-        // TODO: add possibility to stake for liquidity mining
+    /** 
+     * @dev Implements zap by swapping into secondary token and adding the liquidity to the pair
+     * @param pairAddr Address of the UniswapV2 like pair to add liquidity to
+     */
+    function _stakeOrReturnLiquidity(address pairAddr, address stakingAddr) private {
+        if (stakingAddr == address(0)) {
+            // user does not want to stake, so return the liquidity tokens
+            address[] memory tokensToReturn = new address[](1);
+            tokensToReturn[0] = pairAddr;
+            _returnAssets(tokensToReturn);
+        } else {
+            // stake for liquidity mining
+            IStaking stake = IStaking(stakingAddr);
+            require(address(stake.stakingToken()) == pairAddr, "Zap: staking contract for wrong token");
+            uint256 previousStake = stake.stakes(msg.sender);
+            IPair pair = IPair(pairAddr);
+            uint256 amountLT = pair.balanceOf(address(this));
+            pair.approve(stakingAddr, amountLT);
+            stake.stake(amountLT);
+            stake.transferStake(msg.sender, amountLT);
+            // double check after external calls
+            require(stake.stakes(msg.sender) == previousStake.add(amountLT), "Zap: sender did not receive proper stake of liquidity tokens");
+        }
+        // TODO update confluence docs
     }
 
 
@@ -960,16 +1097,20 @@ contract ZapOccamX {
     }
 
     /**
-     * @dev How much of A to swap to B to get the most liquidity tokens from the pair
+     * @dev More exact calculation of how much of A to swap to B to get the most liquidity tokens from the pair. The derivation of the formula can be found in docs/zap_swap_amout_formula.md
      * @param investmentA total amount of token A given as zap input
      * @param reserveA Amount of A tokens in the pair liquidity before the swap
-     * @param reserveB Amount of B tokens in the pair liquidity before the swap
      */
-    function _getSwapAmount(uint256 investmentA, uint256 reserveA, uint256 reserveB) private view returns (uint256 swapAmount) {
-        uint256 halfInvestment = investmentA / 2;
-        uint256 nominator = router.getAmountOut(halfInvestment, reserveA, reserveB);
-        uint256 denominator = router.quote(halfInvestment, reserveA.add(halfInvestment), reserveB.sub(nominator));
-        swapAmount = investmentA.sub(Babylonian.sqrt(halfInvestment * halfInvestment * nominator / denominator));
+    function _getSwapAmount(uint256 investmentA, uint256 reserveA) private pure returns (uint256 swapAmount) {
+        uint256 rTerm = reserveA.mul(1997).div(1000);
+        uint256 rTermSqt = rTerm.mul(rTerm);
+        uint256 additionInSqrt = reserveA.mul(investmentA).mul(4*997).div(1000);
+        swapAmount = Babylonian.sqrt(
+            rTermSqt.add(additionInSqrt                
+            )
+        ).sub(
+            rTerm
+        ).div(2*997).mul(1000);
     }
 
     /** 
@@ -990,7 +1131,7 @@ contract ZapOccamX {
         (uint256 reserveA, uint256 reserveB,) = pair.getReserves();
         (reserveA, reserveB) = isInputA ? (reserveA, reserveB) : (reserveB, reserveA);
 
-        swapAmountIn = _getSwapAmount(fullInvestmentIn, reserveA, reserveB);
+        swapAmountIn = _getSwapAmount(fullInvestmentIn, reserveA);
         swapAmountOut = router.getAmountOut(swapAmountIn, reserveA, reserveB);
         swapTokenOut = isInputA ? pair.token1() : pair.token0();
     }

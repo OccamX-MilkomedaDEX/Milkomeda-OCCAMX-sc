@@ -83,8 +83,6 @@ interface IERC20 {
 
 // File @openzeppelin/contracts/math/SafeMath.sol@v3.4.2
 
-// SPDX-License-Identifier: MIT
-
 pragma solidity >=0.6.0 <0.8.0;
 
 /**
@@ -301,8 +299,6 @@ library SafeMath {
 
 // File @openzeppelin/contracts/utils/Address.sol@v3.4.2
 
-// SPDX-License-Identifier: MIT
-
 pragma solidity >=0.6.2 <0.8.0;
 
 /**
@@ -493,8 +489,6 @@ library Address {
 
 
 // File @openzeppelin/contracts/token/ERC20/SafeERC20.sol@v3.4.2
-
-// SPDX-License-Identifier: MIT
 
 pragma solidity >=0.6.0 <0.8.0;
 
@@ -902,7 +896,7 @@ library Math {
 
 // File contracts/ZapOccamX.sol
 
-// SPDX-License-Identifier: GPLv2
+// ZapOccamX uses GPLv2, not using the SPDX License Identifier here because the Milkomeda explorer would not allow this for flattened contracts
 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by

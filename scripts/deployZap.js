@@ -19,9 +19,9 @@ async function main() {
         testAdaAmount = utils.parseEther("0.001");
         testStakingAddr = "0xe2a525ac8b8d69a0bd28fb45e9dfe52e96c85b32";
     } else if (hre.network.name == "milkomedaTestnet") {
-        routerAddress = "0x472F4fEb99AC98098657f7341F4e04F28DCAD367";
+        routerAddress = "0x602153500e5f4F331044908249B1A6457Bd1a392";
         wAdaAddress = "0x01BbBB9C97FC43e3393E860fc8BbeaD47B6960dB";
-        testPairAddress = "";
+        testPairAddress = "0x8578aBC9e5De03a96CEEc3339C7315735470Fd4F";
         testAdaAmount = utils.parseEther("0.001");
         testStakingAddr = ethers.constants.AddressZero;
     } else {
@@ -43,9 +43,11 @@ async function main() {
     console.log("Zap address:", zap.address);
         
     console.log("Testing zap on pair", testPairAddress);
-    console.log("Afterwards staking on ", testStakingAddr);
     console.log(`Holding ${await pair.balanceOf(deployer.address)} liquidity tokens before zap`);
-    console.log(`Having ${await staking.stakes(deployer.address)} liquidity tokens staked before zap`);
+    if (testStakingAddr != ethers.constants.AddressZero){
+        console.log("Afterwards staking on ", testStakingAddr);
+        console.log(`Having ${await staking.stakes(deployer.address)} liquidity tokens staked before zap`);
+    }
     
     console.log("Executing test zap");
     let tx = await zap.zapInADA(testPairAddress, 0, testStakingAddr, {value: testAdaAmount});
@@ -53,7 +55,9 @@ async function main() {
     console.log("waiting for 5 confirmations");
     await tx.wait(5);
     console.log(`Holding ${await pair.balanceOf(deployer.address)} liquidity tokens after zap`);
-    console.log(`Having ${await staking.stakes(deployer.address)} liquidity tokens staked after zap`);
+    if (testStakingAddr != ethers.constants.AddressZero){
+        console.log(`Having ${await staking.stakes(deployer.address)} liquidity tokens staked after zap`);
+    }
 }
 
 main()

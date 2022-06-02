@@ -7,36 +7,37 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "./Ownable.sol";
 import "./interfaces/IERC20Burnable.sol";
+import "./interfaces/IStaking.sol";
 
-contract StakingImp is ReentrancyGuard, Ownable() {
+contract StakingImp is IStaking, ReentrancyGuard, Ownable() {
     using SafeMath for uint256;
     using SafeERC20 for IERC20;
     using SafeERC20 for IERC20Burnable;
 
     /* ========== STATE VARIABLES ========== */
 
-    IERC20 public rewardsToken; 
-    IERC20Burnable public stakingToken;
-    uint256[] public checkPoints; 
-    uint256[] public rewardPerSecond; 
-    uint256 public lastUpdateTime;
-    uint256 public rewardPerTokenStored;
-    uint public startingCheckPoint; 
+    IERC20 public override rewardsToken; 
+    IERC20Burnable public override stakingToken;
+    uint256[] public override checkPoints; 
+    uint256[] public override rewardPerSecond; 
+    uint256 public override lastUpdateTime;
+    uint256 public override rewardPerTokenStored;
+    uint public override startingCheckPoint; 
 
-    uint public unstakingFeeRatio = 400;
-    uint public newUnstakingFeeRatio;
-    uint public unstakingFeeRatioTimelock;
-    uint public constant unstakingFeeRatioTimelockPeriod = 600;
-    uint public constant unstakingFeeDenominator = 10000;
+    uint public override unstakingFeeRatio = 400;
+    uint public override newUnstakingFeeRatio;
+    uint public override unstakingFeeRatioTimelock;
+    uint public override constant unstakingFeeRatioTimelockPeriod = 600;
+    uint public override constant unstakingFeeDenominator = 10000;
 
-    mapping(address => uint256) public userRewardPerTokenPaid;
-    mapping(address => uint256) public rewards;
+    mapping(address => uint256) public override userRewardPerTokenPaid;
+    mapping(address => uint256) public override rewards;
 
-    uint256 public totalStake;
-    mapping(address => uint256) public stakes;
+    uint256 public override totalStake;
+    mapping(address => uint256) public override stakes;
 
-    bool public feeBurn = false;
-    bool public initialized = false;
+    bool public override feeBurn = false;
+    bool public override initialized = false;
 
     /* ========== CONSTRUCTOR ========== */
 
@@ -49,7 +50,7 @@ contract StakingImp is ReentrancyGuard, Ownable() {
         address admin,
         bool _feeBurn,
         uint _unstakingFeeRatio
-    ) public {
+    ) public override {
         require(initialized == false, "StakingImp: contract has already been initialized.");
         rewardsToken = IERC20(_rewardsToken);
         stakingToken = IERC20Burnable(_stakingToken);
@@ -64,7 +65,7 @@ contract StakingImp is ReentrancyGuard, Ownable() {
         initialized = true;
     }
 
-    function updateSchedule(uint checkPoint, uint _rewardPerSecond) public onlyOwner {
+    function updateSchedule(uint checkPoint, uint _rewardPerSecond) public override onlyOwner {
         require(checkPoint > Math.max(checkPoints[checkPoints.length.sub(1)], block.timestamp), "LM: new checkpoint has to be in the future");
         if (block.timestamp > checkPoints[checkPoints.length.sub(1)]) {
             checkPoints.push(block.timestamp);
@@ -74,19 +75,19 @@ contract StakingImp is ReentrancyGuard, Ownable() {
         rewardPerSecond.push(_rewardPerSecond);
     }
 
-    function getCheckPoints() public view returns (uint256[] memory) {
+    function getCheckPoints() public override view returns (uint256[] memory) {
         return checkPoints;
     }
 
-    function getRewardPerSecond() public view returns (uint256[] memory) {
+    function getRewardPerSecond() public override view returns (uint256[] memory) {
         return rewardPerSecond;
     }
 
-    function lastTimeRewardApplicable() public view returns (uint256) {
+    function lastTimeRewardApplicable() public override view returns (uint256) {
         return Math.min(block.timestamp, checkPoints[checkPoints.length.sub(1)]);
     }
 
-    function getTotalEmittedTokens(uint256 _from, uint256 _to, uint256 _startingCheckPoint) public view returns (uint256, uint256) {
+    function getTotalEmittedTokens(uint256 _from, uint256 _to, uint256 _startingCheckPoint) public override view returns (uint256, uint256) {
         require(_to >= _from, "StakingImp: _to has to be greater than _from.");
         uint256 totalEmittedTokens = 0;
         uint256 workingTime = Math.max(_from, checkPoints[0]);
@@ -110,11 +111,11 @@ contract StakingImp is ReentrancyGuard, Ownable() {
 
     /* ========== MUTATIVE FUNCTIONS ========== */
 
-    function setFeeBurn(bool _feeBurn) public onlyOwner {
+    function setFeeBurn(bool _feeBurn) public override onlyOwner {
         feeBurn = _feeBurn;
     }
 
-    function stake(uint256 amount) external nonReentrant updateReward(msg.sender) {
+    function stake(uint256 amount) external override nonReentrant updateReward(msg.sender) {
         require(amount > 0, "StakingImp: Cannot stake 0");
         totalStake = totalStake.add(amount);
         stakes[msg.sender] = stakes[msg.sender].add(amount);
@@ -122,7 +123,7 @@ contract StakingImp is ReentrancyGuard, Ownable() {
         emit Staked(msg.sender, amount);
     }
 
-    function unstake(uint256 amount, uint maximumFee) public nonReentrant updateReward(msg.sender) {
+    function unstake(uint256 amount, uint maximumFee) public override nonReentrant updateReward(msg.sender) {
         uint unstakingFee = amount.mul(unstakingFeeRatio).div(unstakingFeeDenominator);
         require(unstakingFee <= maximumFee, "StakingImp: fee too high.");
         uint amountWithoutFee = amount.sub(unstakingFee);
@@ -137,7 +138,7 @@ contract StakingImp is ReentrancyGuard, Ownable() {
         emit Unstaked(msg.sender, amount);
     }
 
-    function transferStake(address _recipient, uint _amount) public {
+    function transferStake(address _recipient, uint _amount) public override {
         require(_amount <= stakes[msg.sender], "StakingImp: not enough stake to transfer");
         _updateReward(msg.sender);
         _updateReward(_recipient);
@@ -147,7 +148,7 @@ contract StakingImp is ReentrancyGuard, Ownable() {
         emit Staked(_recipient, _amount);
     }
 
-    function getRewardThenStake() public nonReentrant updateReward(msg.sender) {
+    function getRewardThenStake() public override nonReentrant updateReward(msg.sender) {
         require(address(stakingToken) == address(rewardsToken), "StakingImp:only when staking and rewards tokens are the same");
         uint256 reward = rewards[msg.sender];
         if (reward > 0) {
@@ -160,7 +161,7 @@ contract StakingImp is ReentrancyGuard, Ownable() {
         }
     }
 
-    function withdrawFee(uint256 amount) public nonReentrant onlyOwner {
+    function withdrawFee(uint256 amount) public override nonReentrant onlyOwner {
         uint totalFee = stakingToken.balanceOf(address(this)).sub(totalStake);
         require(amount <= totalFee, "StakingImp: not enough fee.");
         stakingToken.transfer(owner, amount);
@@ -168,7 +169,7 @@ contract StakingImp is ReentrancyGuard, Ownable() {
 
     } 
 
-    function getReward() public nonReentrant updateReward(msg.sender) {
+    function getReward() public override nonReentrant updateReward(msg.sender) {
         uint256 reward = rewards[msg.sender];
         if (reward > 0) {
             rewards[msg.sender] = 0;
@@ -177,23 +178,23 @@ contract StakingImp is ReentrancyGuard, Ownable() {
         }
     }
 
-    function exit() external {
+    function exit() external override {
         unstake(stakes[msg.sender], uint(-1));
         getReward();
     }
 
-    function setNewUnstakingFeeRatio(uint _newUnstakingFeeRatio) public onlyOwner {
+    function setNewUnstakingFeeRatio(uint _newUnstakingFeeRatio) public override onlyOwner {
         require(_newUnstakingFeeRatio <= unstakingFeeDenominator, "StakingImp: invalid unstaking fee.");
         newUnstakingFeeRatio = _newUnstakingFeeRatio;
         unstakingFeeRatioTimelock = block.timestamp.add(unstakingFeeRatioTimelockPeriod);
     }
 
-    function changeUnstakingFeeRatio() public onlyOwner {
+    function changeUnstakingFeeRatio() public override onlyOwner {
         require(block.timestamp >= unstakingFeeRatioTimelock, "StakingImp: too early to change unstaking fee.");
         unstakingFeeRatio = newUnstakingFeeRatio;
     }
 
-    function showPendingReward(address account) public view returns (uint256) {
+    function showPendingReward(address account) public override view returns (uint256) {
         uint rewardPerTokenStoredActual;
         if (totalStake != 0) {
             (uint256 totalEmittedTokensSinceLastUpdate, ) = getTotalEmittedTokens(lastUpdateTime, block.timestamp, startingCheckPoint);

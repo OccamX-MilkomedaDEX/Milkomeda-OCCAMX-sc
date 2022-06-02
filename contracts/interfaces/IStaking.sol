@@ -10,17 +10,11 @@ interface IStaking {
     event FeeBurned(uint256 amount);
     event FeeCollected(uint256 amount);
 
-    // from Ownable
-    function owner() external view returns (address);
-    function pendingOwner() external view returns (address);
-    function transferOwnership(address newOwner, bool direct, bool renounce) external;
-    function claimOwnership() external;
-
     // public variables and mappings
     function rewardsToken() external view returns(IERC20); 
     function stakingToken() external view returns(IERC20Burnable);
-    function checkPoints() external view returns(uint256[] memory); 
-    function rewardPerSecond() external view returns(uint256[] memory); 
+    function checkPoints(uint) external view returns(uint256); 
+    function rewardPerSecond(uint) external view returns(uint256); 
     function lastUpdateTime() external view returns(uint256);
     function rewardPerTokenStored() external view returns(uint256);
     function startingCheckPoint() external view returns(uint); 

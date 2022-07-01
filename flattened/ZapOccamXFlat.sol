@@ -1060,7 +1060,9 @@ contract ZapOccamX {
             uint256 previousStake = stake.stakes(msg.sender);
             IPair pair = IPair(pairAddr);
             uint256 amountLT = pair.balanceOf(address(this));
-            pair.approve(stakingAddr, amountLT);
+            if (pair.allowance(address(this), stakingAddr) < amountLT){
+                pair.approve(stakingAddr, type(uint).max);
+            }
             stake.stake(amountLT);
             stake.transferStake(msg.sender, amountLT);
             // double check after external calls

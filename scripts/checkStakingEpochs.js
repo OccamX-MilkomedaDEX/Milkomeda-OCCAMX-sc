@@ -4,9 +4,11 @@ const { sleep, getTableFromFile, askUserConfirmation } = require("./helpers");
 const { ethers } = require("hardhat");
 
 async function main() {
-    // Main parameters for epoch update, make sure to adjust them with every uptade
+    // Main parameters for epoch update
     const newEpochEndDate = dateFromString("2022-07-20T18:00:00.000Z");
+    // Read staking contracts and rewards per second from table (copied from google sheet) 
     let newRewardData = getTableFromFile("scripts/LMInfo.csv");
+
     
     let newEpochEndTimestamp = newEpochEndDate.getTime() / 1000;
     await askUserConfirmation("Update the epoch end date to " + newEpochEndDate.toString() + "?");

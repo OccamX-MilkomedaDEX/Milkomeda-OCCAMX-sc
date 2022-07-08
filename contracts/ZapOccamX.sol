@@ -16,12 +16,9 @@ import '@openzeppelin/contracts/token/ERC20/SafeERC20.sol';
 import '@uniswap/lib/contracts/libraries/Babylonian.sol';
 import './interfaces/IPair.sol';
 import './interfaces/IRouter02.sol';
+import './interfaces/IStaking.sol';
+import './interfaces/IWADA.sol';
 import './libraries/Math.sol';
-
-interface IWADA is IERC20 {
-    function deposit() external payable;
-    function withdraw(uint256 wad) external;
-}
 
 
 /**
@@ -53,13 +50,21 @@ contract ZapOccamX {
      * @notice Zap into pair providing ADA as input
      * @param pairAddr Address of the UniswapV2 like pair to add liquidity to
      * @param tokenAmountOutMin Minimum amount of token to receive in the swap before adding liquidity (basically your slippage tolerance)
+     * @param stakingAddr Address of the liquidity mining contract to stake to (zero address if you do not want to stake your liquidity)
      */
-    function zapInADA (address pairAddr, uint256 tokenAmountOutMin) external payable {
+    function zapInADA (
+        address pairAddr,
+        uint256 tokenAmountOutMin,
+        address stakingAddr
+    ) 
+        external payable 
+    {
         require(msg.value >= minimumAmount, 'Zap: Insignificant input amount');
 
         IWADA(WADA).deposit{value: msg.value}();
 
         _swapAndAddLiquidity(pairAddr, tokenAmountOutMin, WADA);
+        _stakeOrReturnLiquidity(pairAddr, stakingAddr);
     }
 
     /** 
@@ -68,16 +73,25 @@ contract ZapOccamX {
      * @param tokenAmountOutMin Minimum amount of token to receive in the swap before adding liquidity (basically your slippage tolerance)
      * @param tokenIn Which token of the pair to provide as input
      * @param tokenInAmount How much of tokenIn to invest into pair liquidity
+     * @param stakingAddr Address of the liquidity mining contract to stake to (zero address if you do not want to stake your liquidity)
      */
-    function zapIn (address pairAddr, uint256 tokenAmountOutMin, address tokenIn, uint256 tokenInAmount) external {
+    function zapIn (
+        address pairAddr,
+        uint256 tokenAmountOutMin,
+        address tokenIn,
+        uint256 tokenInAmount,
+        address stakingAddr
+    ) 
+        external
+    {
         require(tokenInAmount >= minimumAmount, 'Zap: Insignificant input amount');
         require(IERC20(tokenIn).allowance(msg.sender, address(this)) >= tokenInAmount, 'Zap: Input token is not approved');
 
         IERC20(tokenIn).safeTransferFrom(msg.sender, address(this), tokenInAmount);
 
         _swapAndAddLiquidity(pairAddr, tokenAmountOutMin, tokenIn);
+        _stakeOrReturnLiquidity(pairAddr, stakingAddr);
     }
-
 
     /** 
      * @dev Implements zap by swapping into secondary token and adding the liquidity to the pair
@@ -123,13 +137,38 @@ contract ZapOccamX {
         // (Maybe not needed because the router is under our control, but someone could potentially sneak in a different pool)
         require(pair.balanceOf(address(this)) >= amountLiquidity && amountLiquidity > 0, "unexpected amount of liquidity tokens returned");
 
-        address[] memory tokensToReturn = new address[](3);
-        tokensToReturn[0] = pairAddr;
-        tokensToReturn[1] = tokenIn;
-        tokensToReturn[2] = path[0];
+        address[] memory tokensToReturn = new address[](2);
+        tokensToReturn[0] = tokenIn;
+        tokensToReturn[1] = path[0];
         _returnAssets(tokensToReturn);
+    }
 
-        // TODO: add possibility to stake for liquidity mining
+    /** 
+     * @dev Implements zap by swapping into secondary token and adding the liquidity to the pair
+     * @param pairAddr Address of the UniswapV2 like pair to add liquidity to
+     */
+    function _stakeOrReturnLiquidity(address pairAddr, address stakingAddr) private {
+        if (stakingAddr == address(0)) {
+            // user does not want to stake, so return the liquidity tokens
+            address[] memory tokensToReturn = new address[](1);
+            tokensToReturn[0] = pairAddr;
+            _returnAssets(tokensToReturn);
+        } else {
+            // stake for liquidity mining
+            IStaking stake = IStaking(stakingAddr);
+            require(address(stake.stakingToken()) == pairAddr, "Zap: staking contract for wrong token");
+            uint256 previousStake = stake.stakes(msg.sender);
+            IPair pair = IPair(pairAddr);
+            uint256 amountLT = pair.balanceOf(address(this));
+            if (pair.allowance(address(this), stakingAddr) < amountLT){
+                pair.approve(stakingAddr, type(uint).max);
+            }
+            stake.stake(amountLT);
+            stake.transferStake(msg.sender, amountLT);
+            // double check after external calls
+            require(stake.stakes(msg.sender) == previousStake.add(amountLT), "Zap: sender did not receive proper stake of liquidity tokens");
+        }
+        // TODO update confluence docs
     }
 
 
